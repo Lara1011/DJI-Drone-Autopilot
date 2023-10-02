@@ -226,6 +226,7 @@ public class ILMRemoteControllerView extends RelativeLayout
 
         videoController.displayVideo();
         infoUpdate.updateGimbalState();
+        infoUpdate.updateBatteryPercentage();
     }
 
 

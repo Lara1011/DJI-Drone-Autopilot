@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import dji.common.battery.BatteryState;
 import dji.sdk.gimbal.Gimbal;
 
 public class ILMInfoUpdate {
@@ -81,5 +82,18 @@ public class ILMInfoUpdate {
         updateTimeRunnable.run();
     }
 
+    public void updateBatteryPercentage() {
+        DJISampleApplication.getProductInstance().getBattery().setStateCallback(new BatteryState.Callback() {
+            @Override
+            public void onUpdate(BatteryState djiBatteryState) {
+                int batteryPercentage = djiBatteryState.getChargeRemainingInPercent();
+                if (Battery != null) {
+                    runOnUiThread(() -> {
+                        Battery.setText(String.valueOf(batteryPercentage)+"%");
+                    });
+                }
+            }
+        });
+    }
 
 }
