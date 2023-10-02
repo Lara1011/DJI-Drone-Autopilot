@@ -1,8 +1,6 @@
 package com.dji.sdk.sample.demo.ILM;
-import java.util.Date;
 
 import static com.dji.sdk.sample.internal.utils.ToastUtils.showToast;
-import static com.google.android.gms.internal.zzahn.runOnUiThread;
 
 import android.app.Service;
 import android.content.Context;
@@ -27,7 +25,6 @@ import com.dji.sdk.sample.internal.utils.ToastUtils;
 import com.dji.sdk.sample.internal.utils.VideoFeedView;
 import com.dji.sdk.sample.internal.view.PresentableView;
 
-import dji.common.airlink.PhysicalSource;
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
 import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
@@ -35,18 +32,12 @@ import dji.common.flightcontroller.virtualstick.VerticalControlMode;
 import dji.common.flightcontroller.virtualstick.YawControlMode;
 import dji.common.util.CommonCallbacks;
 import dji.keysdk.callback.SetCallback;
-import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
 import dji.sdk.flightcontroller.FlightController;
-import dji.sdk.gimbal.Gimbal;
-import dji.sdk.sdkmanager.DJISDKManager;
 
 import org.osmdroid.views.MapView;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 public class ILMRemoteControllerView extends RelativeLayout
         implements View.OnClickListener, CompoundButton.OnCheckedChangeListener, View.OnFocusChangeListener,
@@ -64,8 +55,7 @@ public class ILMRemoteControllerView extends RelativeLayout
     private TextView latitude;
     private TextView longtitude;
     private TextView altitude;
-    private TextView Date;
-    //private TextView Time;
+    private TextView DateTime;
     private TextView Speed;
     private TextView Distance;
     private TextView Pitch;
@@ -77,10 +67,10 @@ public class ILMRemoteControllerView extends RelativeLayout
     protected DJICodecManager mCodecManager = null;
     private SetCallback setBandwidthCallback;
     private VideoFeeder.PhysicalSourceListener sourceListener;
-    private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
     private Handler handler = new Handler();
     private ILMMapController mapController;
     private ILMVideoController videoController;
+    private ILMInfoUpdate infoUpdate;
 
     public ILMRemoteControllerView(Context context) {
         super(context);
@@ -112,9 +102,7 @@ public class ILMRemoteControllerView extends RelativeLayout
         Speed = (TextView) findViewById(R.id.textView_ILM_SpeedInt);
         Distance = (TextView) findViewById(R.id.textView_ILM_DistanceInt);
         Battery = (TextView) findViewById(R.id.textView_ILM_BatteryInt);
-        Date = (TextView) findViewById(R.id.textView_ILM_DateInt);
-
-        updateDateTime();
+        DateTime = (TextView) findViewById(R.id.textView_ILM_DateInt);
 
         Pitch = (TextView) findViewById(R.id.textView_ILM_PitchInt);
         Roll = (TextView) findViewById(R.id.textView_ILM_RollInt);
@@ -124,6 +112,9 @@ public class ILMRemoteControllerView extends RelativeLayout
         mapController = new ILMMapController(ctx, mapView);
         videoFeedView = (VideoFeedView) findViewById(R.id.videoFeedView_ILM);
         view = (View) findViewById(R.id.view_ILM_coverView);
+
+        infoUpdate = new ILMInfoUpdate(Battery,x,y,z,latitude,longtitude,altitude,DateTime,Speed,Distance,Pitch,Roll,Yaw);
+        infoUpdate.updateDateTime();
 
         Stopbtn.setOnClickListener(this);
         Landbtn.setOnClickListener(this);
@@ -227,39 +218,6 @@ public class ILMRemoteControllerView extends RelativeLayout
         return this.getClass().getSimpleName() + ".java";
     }
 
-    private void updateGimbalState() {
-        if (ModuleVerificationUtil.isGimbalModuleAvailable()) {
-            Gimbal gimbal = DJISampleApplication.getProductInstance().getGimbal();
-            if (gimbal != null) {
-                gimbal.setStateCallback(gimbalState -> {
-                    runOnUiThread(() -> {
-                        Pitch.setText(String.valueOf((int) gimbalState.getAttitudeInDegrees().getPitch()));
-                        Roll.setText(String.valueOf((int) gimbalState.getAttitudeInDegrees().getRoll()));
-                        Yaw.setText(String.valueOf((int) gimbalState.getAttitudeInDegrees().getYaw()));
-                    });
-                });
-            }
-        }
-    }
-
-
-    private void updateDateTime() {
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy, HH:mm:ss", Locale.getDefault());
-
-        Runnable updateTimeRunnable = new Runnable() {
-            @Override
-            public void run() {
-                String formattedDateTime = dateFormat.format(new Date());
-
-                if (Date != null) {
-                    Date.setText(formattedDateTime);
-                }
-                handler.postDelayed(this, 1000);
-            }
-        };
-        updateTimeRunnable.run();
-    }
-
 
     @Override
     protected void onAttachedToWindow() {
@@ -267,7 +225,7 @@ public class ILMRemoteControllerView extends RelativeLayout
         DJISampleApplication.getEventBus().post(new MainActivity.RequestStartFullScreenEvent());
 
         videoController.displayVideo();
-        updateGimbalState();
+        infoUpdate.updateGimbalState();
     }
 
 
