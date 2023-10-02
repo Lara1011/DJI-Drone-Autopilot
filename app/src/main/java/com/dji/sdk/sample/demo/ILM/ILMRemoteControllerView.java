@@ -4,14 +4,10 @@ import java.util.Date;
 import static com.dji.sdk.sample.internal.utils.ToastUtils.showToast;
 import static com.google.android.gms.internal.zzahn.runOnUiThread;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.TextureView;
@@ -22,24 +18,14 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.dji.sdk.sample.R;
 import com.dji.sdk.sample.internal.controller.DJISampleApplication;
 import com.dji.sdk.sample.internal.controller.MainActivity;
-import com.dji.sdk.sample.internal.utils.Helper;
 import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
 import com.dji.sdk.sample.internal.utils.ToastUtils;
 import com.dji.sdk.sample.internal.utils.VideoFeedView;
 import com.dji.sdk.sample.internal.view.PresentableView;
-
-import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.CustomZoomButtonsController;
-import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.compass.CompassOverlay;
 
 import dji.common.airlink.PhysicalSource;
 import dji.common.error.DJIError;
@@ -47,7 +33,6 @@ import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
 import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
 import dji.common.flightcontroller.virtualstick.VerticalControlMode;
 import dji.common.flightcontroller.virtualstick.YawControlMode;
-import dji.common.gimbal.GimbalState;
 import dji.common.util.CommonCallbacks;
 import dji.keysdk.callback.SetCallback;
 import dji.sdk.base.BaseProduct;
@@ -61,7 +46,6 @@ import org.osmdroid.views.MapView;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Locale;
 
 public class ILMRemoteControllerView extends RelativeLayout
@@ -96,24 +80,13 @@ public class ILMRemoteControllerView extends RelativeLayout
     private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
     private Handler handler = new Handler();
     private ILMMapController mapController;
+    private ILMVideoController videoController;
 
     public ILMRemoteControllerView(Context context) {
         super(context);
         ctx = context;
         init(context);
-        setBandwidthCallback = new SetCallback() {
-            @Override
-            public void onSuccess() {
-                ToastUtils.setResultToToast("Set key value successfully");
-                if (videoFeedView != null) {
-                    videoFeedView.changeSourceResetKeyFrame();
-                }
-            }
-            @Override
-            public void onFailure(@NonNull DJIError error) {
-                ToastUtils.setResultToToast("Failed to set: " + error.getDescription());
-            }
-        };
+        videoController = new ILMVideoController(videoFeedView);
     }
 
     private void init(Context context) {
@@ -253,29 +226,6 @@ public class ILMRemoteControllerView extends RelativeLayout
     public String getHint() {
         return this.getClass().getSimpleName() + ".java";
     }
-    private void displayVideo(){
-        sourceListener = new VideoFeeder.PhysicalSourceListener() {
-            @Override
-            public void onChange(VideoFeeder.VideoFeed videoFeed, PhysicalSource newPhysicalSource) {
-                if (videoFeed == VideoFeeder.getInstance().getPrimaryVideoFeed()) {
-                    String newText = "Primary Source: " + newPhysicalSource.toString();
-                    TextView primaryVideoFeedTitle = null;
-                    ToastUtils.setResultToText(primaryVideoFeedTitle,newText);
-                }
-                if (videoFeed == VideoFeeder.getInstance().getSecondaryVideoFeed()) {
-                    TextView fpvVideoFeedTitle = null;
-                    ToastUtils.setResultToText(fpvVideoFeedTitle,"Secondary Source: " + newPhysicalSource.toString());
-                }
-            }
-        };
-        if (VideoFeeder.getInstance() == null) return;
-        final BaseProduct product = DJISDKManager.getInstance().getProduct();
-        if (product != null) {
-            VideoFeeder.VideoDataListener primaryVideoDataListener =
-                    videoFeedView.registerLiveVideo(VideoFeeder.getInstance().getPrimaryVideoFeed(), true);
-            VideoFeeder.getInstance().addPhysicalSourceListener(sourceListener);
-        }
-    }
 
     private void updateGimbalState() {
         if (ModuleVerificationUtil.isGimbalModuleAvailable()) {
@@ -316,7 +266,7 @@ public class ILMRemoteControllerView extends RelativeLayout
         super.onAttachedToWindow();
         DJISampleApplication.getEventBus().post(new MainActivity.RequestStartFullScreenEvent());
 
-        displayVideo();
+        videoController.displayVideo();
         updateGimbalState();
     }
 
