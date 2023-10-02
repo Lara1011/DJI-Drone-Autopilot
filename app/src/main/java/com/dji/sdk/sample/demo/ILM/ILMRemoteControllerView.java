@@ -95,51 +95,7 @@ public class ILMRemoteControllerView extends RelativeLayout
     private VideoFeeder.PhysicalSourceListener sourceListener;
     private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
     private Handler handler = new Handler();
-
-
-    private void setMapView() {
-        Context ctx1 = ctx.getApplicationContext();
-        Configuration.getInstance().load(ctx1, PreferenceManager.getDefaultSharedPreferences(ctx1));
-
-        mapView = findViewById(R.id.mapView_ILM);
-        mapView.setTileSource(TileSourceFactory.MAPNIK);
-        mapView.getController().setZoom(18.0);
-
-        requestPermissionsIfNecessary(new String[]{
-                Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.INTERNET
-        });
-        mapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
-        mapView.setMultiTouchControls(true);
-
-        CompassOverlay compassOverlay = new CompassOverlay(ctx, mapView);
-        compassOverlay.enableCompass();
-        mapView.getOverlays().add(compassOverlay);
-
-        GeoPoint point = new GeoPoint(32.10302253616168,35.20963146438375,678.5224969069494);
-
-        Marker startMarker = new Marker(mapView);
-        startMarker.setPosition(point);
-        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-        mapView.getOverlays().add(startMarker);
-
-        mapView.getController().setCenter(point);
-    }
-
-    private void requestPermissionsIfNecessary(String[] permissions) {
-        ArrayList<String> permissionsToRequest = new ArrayList<>();
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(ctx, permission)
-                    != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(permission);
-            }
-        }
-        if (!permissionsToRequest.isEmpty()) {
-            ActivityCompat.requestPermissions(
-                    (Activity) ctx,
-                    permissionsToRequest.toArray(new String[0]),
-                    REQUEST_PERMISSIONS_REQUEST_CODE);
-        }
-    }
+    private ILMMapController mapController;
 
     public ILMRemoteControllerView(Context context) {
         super(context);
@@ -165,7 +121,7 @@ public class ILMRemoteControllerView extends RelativeLayout
         LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Service.LAYOUT_INFLATER_SERVICE);
         layoutInflater.inflate(R.layout.view_ilm_rc, this, true);
         initUI();
-        setMapView();
+        mapController.init(ctx,mapView);
     }
 
     private void initUI() {
@@ -192,6 +148,7 @@ public class ILMRemoteControllerView extends RelativeLayout
         Yaw = (TextView) findViewById(R.id.textView_ILM_YawInt);
 
         mapView = (MapView) findViewById(R.id.mapView_ILM);
+        mapController = new ILMMapController(ctx, mapView);
         videoFeedView = (VideoFeedView) findViewById(R.id.videoFeedView_ILM);
         view = (View) findViewById(R.id.view_ILM_coverView);
 
