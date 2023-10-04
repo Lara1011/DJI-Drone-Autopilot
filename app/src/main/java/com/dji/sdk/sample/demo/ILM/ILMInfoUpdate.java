@@ -9,6 +9,7 @@ import com.dji.sdk.sample.internal.controller.DJISampleApplication;
 import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -17,6 +18,7 @@ import dji.common.battery.BatteryState;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.sdk.flightcontroller.FlightController;
+import dji.sdk.flighthub.model.FlightPathNode;
 import dji.sdk.gimbal.Gimbal;
 
 public class ILMInfoUpdate {
@@ -33,6 +35,7 @@ public class ILMInfoUpdate {
     private TextView Pitch;
     private TextView Roll;
     private TextView Yaw;
+    private FlightPathNode flightPathNode = new FlightPathNode();
     private Handler handler = new Handler();
     private Handler locationUpdateHandler = new Handler();
     private Handler xyzUpdateHandler = new Handler();
@@ -80,7 +83,7 @@ public class ILMInfoUpdate {
                 if (DateTime != null) {
                     DateTime.setText(formattedDateTime);
                 }
-                handler.postDelayed(this, 1000);
+                //handler.postDelayed(this, 1000);
             }
         };
         updateTimeRunnable.run();
@@ -117,33 +120,56 @@ public class ILMInfoUpdate {
                         altitude.setText(String.format(Locale.getDefault(), "%.6f", alt));
                     }
                 }
-                locationUpdateHandler.postDelayed(this, 1000);
+                //locationUpdateHandler.postDelayed(this, 1000);
             }
         };
         updateTimeRunnable.run();
     }
 
     public void updateXYZ() {
+        // Create a DecimalFormat object with two decimal places
+        final DecimalFormat decimalFormat = new DecimalFormat("0.00000");
+
         if (ModuleVerificationUtil.isFlightControllerAvailable()) {
             DJISampleApplication.getAircraftInstance().getFlightController().setStateCallback(new FlightControllerState.Callback() {
                 @Override
                 public void onUpdate(FlightControllerState flightControllerState) {
                     if (flightControllerState != null) {
-                        final int velocityX = (int) flightControllerState.getVelocityX();
-                        final int velocityY = (int) flightControllerState.getVelocityY();
-                        final int velocityZ = (int) flightControllerState.getVelocityZ();
+                        final float velocityX = flightControllerState.getVelocityX();
+                        final float velocityY = flightControllerState.getVelocityY();
+                        final float velocityZ = flightControllerState.getVelocityZ();
+
+                        // Format velocity values using the DecimalFormat
+                        final String formattedVelocityX = decimalFormat.format(velocityX);
+                        final String formattedVelocityY = decimalFormat.format(velocityY);
+                        final String formattedVelocityZ = decimalFormat.format(velocityZ);
+
+                        // Update UI on the main thread
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                x.setText(String.format(Locale.getDefault(), "%d", velocityX));
-                                y.setText(String.format(Locale.getDefault(), "%d", velocityY));
-                                z.setText(String.format(Locale.getDefault(), "%d", velocityZ));
-                                xyzUpdateHandler.postDelayed(this, 1000);
+                                // Set the formatted velocity values in your UI elements
+                                x.setText(formattedVelocityX + " m/s");
+                                y.setText(formattedVelocityY + " m/s");
+                                z.setText(formattedVelocityZ + " m/s");
                             }
                         });
                     }
                 }
             });
         }
+    }
+
+    public void updateSpeed() {
+        final Handler handler = new Handler();
+        Runnable updateSpeedRunnable = new Runnable() {
+            @Override
+            public void run() {
+                double speedValue = flightPathNode.getSpeed(); // Get the current speed
+                Speed.setText(speedValue + " m/s");
+                //handler.postDelayed(this, 1000); // Schedule this Runnable to run again after 1 second
+            }
+        };
+        handler.post(updateSpeedRunnable);
     }
 }
