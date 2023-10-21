@@ -2,9 +2,13 @@ package com.dji.sdk.sample.demo.ILM;
 
 import static com.dji.sdk.sample.internal.utils.ToastUtils.showToast;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,12 +20,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.dji.sdk.sample.R;
 import com.dji.sdk.sample.internal.controller.DJISampleApplication;
 import com.dji.sdk.sample.internal.controller.MainActivity;
 import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
-import com.dji.sdk.sample.internal.utils.ToastUtils;
 import com.dji.sdk.sample.internal.utils.VideoFeedView;
 import com.dji.sdk.sample.internal.view.PresentableView;
 
@@ -41,7 +46,7 @@ import org.osmdroid.views.MapView;
 
 public class ILMRemoteControllerView extends RelativeLayout
         implements View.OnClickListener, CompoundButton.OnCheckedChangeListener, View.OnFocusChangeListener,
-        PresentableView, TextureView.SurfaceTextureListener{
+        PresentableView, TextureView.SurfaceTextureListener {
 
     private Context ctx;
     private Button GoTobtn;
@@ -53,7 +58,7 @@ public class ILMRemoteControllerView extends RelativeLayout
     private TextView y;
     private TextView z;
     private TextView latitude;
-    private TextView longtitude;
+    private TextView longitude;
     private TextView altitude;
     private TextView DateTime;
     private TextView Speed;
@@ -71,12 +76,21 @@ public class ILMRemoteControllerView extends RelativeLayout
     private ILMMapController mapController;
     private ILMVideoController videoController;
     private ILMInfoUpdate infoUpdate;
+    private ILMCSVLog ilmLog;
+    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 99999; // Use any unique value
+
 
     public ILMRemoteControllerView(Context context) {
         super(context);
         ctx = context;
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // Request the permission
+            ActivityCompat.requestPermissions((Activity) context, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
+        }
         init(context);
         videoController = new ILMVideoController(videoFeedView);
+
+        showToast("Log file created");
     }
 
     private void init(Context context) {
@@ -96,7 +110,7 @@ public class ILMRemoteControllerView extends RelativeLayout
         y = (TextView) findViewById(R.id.textView_ILM_YInt);
         z = (TextView) findViewById(R.id.textView_ILM_ZInt);
         latitude = (TextView) findViewById(R.id.textView_ILM_Latitude);
-        longtitude = (TextView) findViewById(R.id.textView_ILM_Longitude);
+        longitude = (TextView) findViewById(R.id.textView_ILM_Longitude);
         altitude = (TextView) findViewById(R.id.textView_ILM_Altitude);
 
         Speed = (TextView) findViewById(R.id.textView_ILM_SpeedInt);
@@ -113,9 +127,11 @@ public class ILMRemoteControllerView extends RelativeLayout
         videoFeedView = (VideoFeedView) findViewById(R.id.videoFeedView_ILM);
         view = (View) findViewById(R.id.view_ILM_coverView);
 
-        infoUpdate = new ILMInfoUpdate(Battery,x,y,z,latitude,longtitude,altitude,DateTime,Speed,Distance,Pitch,Roll,Yaw);
+        infoUpdate = new ILMInfoUpdate(Battery,x,y,z,latitude, longitude,altitude,DateTime,Speed,Distance,Pitch,Roll,Yaw);
         infoUpdate.updateDateTime();
 
+        ilmLog = new ILMCSVLog(ctx, infoUpdate);
+        ilmLog.createLogBrain();
         Stopbtn.setOnClickListener(this);
         Landbtn.setOnClickListener(this);
         GoTobtn.setOnClickListener(this);
@@ -125,45 +141,26 @@ public class ILMRemoteControllerView extends RelativeLayout
     @Override
     public void onClick(View v) {
         FlightController flightController = ModuleVerificationUtil.getFlightController();
-        if (flightController == null) {
-            return;
-        }
-        flightController.setYawControlMode(YawControlMode.ANGLE);
-        flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
-        flightController.setYawControlMode(YawControlMode.ANGLE);
-        flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
-        flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
-        switch (v.getId()) {
-            case R.id.btn_ILM_Stop:
-                flightController.getFlightAssistant().setLandingProtectionEnabled(true, new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError djiError) {
-                        if (djiError != null) showToast("" + djiError);
-                        else showToast("Landing protection DISABLED!");
-                    }
-                });
-                disable(flightController);
-            case R.id.btn_ILM_GoTo:
-            case R.id.btn_ILM_Land:
-        }
-    }
-
-    private void disable(FlightController flightController) {
-//        autonomous_mode_txt.setText("manual");
-//        autonomous_mode_txt.setTextColor(Color.rgb(255,0,0));
-
-
-        //send stop to aircraft
-        controller.stopOnPlace();
-
-        flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
-            @Override
-            public void onResult(DJIError djiError) {
-                if(djiError == null) {
-                    ToastUtils.setResultToToast("Virtual sticks disabled!");
-                }
+        if (flightController != null) {
+            flightController.setYawControlMode(YawControlMode.ANGLE);
+            flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+            flightController.setYawControlMode(YawControlMode.ANGLE);
+            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+            flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+            switch (v.getId()) {
+                case R.id.btn_ILM_Stop:
+                    flightController.getFlightAssistant().setLandingProtectionEnabled(true, new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            if (djiError != null) showToast("" + djiError);
+                            else showToast("Landing protection DISABLED!");
+                        }
+                    });
+                    controller.disable(flightController);
+                case R.id.btn_ILM_GoTo:
+                case R.id.btn_ILM_Land:
             }
-        });
+        }
     }
 
     @Override
@@ -227,12 +224,17 @@ public class ILMRemoteControllerView extends RelativeLayout
         videoController.displayVideo();
         infoUpdate.updateGimbalState();
         infoUpdate.updateBatteryPercentage();
+        infoUpdate.updateLatitudeLongitude();
+        infoUpdate.updateXYZ();
+        infoUpdate.updateSpeed();
     }
 
 
     @Override
     protected void onDetachedFromWindow() {
         DJISampleApplication.getEventBus().post(new MainActivity.RequestEndFullScreenEvent());
+        //infoUpdate.closeWriter();
+        ilmLog.closeLogBrain();
         super.onDetachedFromWindow();
     }
 }
