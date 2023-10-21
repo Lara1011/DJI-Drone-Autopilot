@@ -15,12 +15,12 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TableRow
-            android:layout_width="match_parent"
+            android:layout_width="571dp"
             android:layout_height="match_parent">
 
             <TextView
                 android:id="@+id/textView_ILM_BatteryTxt"
-                android:layout_width="60dp"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="battery"
@@ -28,7 +28,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_SpeedTxt"
-                android:layout_width="60dp"
+                android:layout_width="49dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="speed"
@@ -36,7 +36,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_DistanceTxt"
-                android:layout_width="60dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="distance"
@@ -44,7 +44,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_XTxt"
-                android:layout_width="34dp"
+                android:layout_width="69dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="x"
@@ -52,7 +52,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_YTxt"
-                android:layout_width="33dp"
+                android:layout_width="66dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="y"
@@ -60,7 +60,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_ZTxt"
-                android:layout_width="31dp"
+                android:layout_width="65dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="z"
@@ -68,7 +68,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_PitchTxt"
-                android:layout_width="44dp"
+                android:layout_width="41dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="pitch"
@@ -76,7 +76,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_RollTxt"
-                android:layout_width="41dp"
+                android:layout_width="38dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="roll"
@@ -84,7 +84,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_YawTxt"
-                android:layout_width="44dp"
+                android:layout_width="38dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="yaw"
@@ -92,7 +92,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_DateTxt"
-                android:layout_width="180dp"
+                android:layout_width="153dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="time&amp;date"
@@ -138,7 +138,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_YInt"
-                android:layout_width="wrap_content"
+                android:layout_width="42dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/_0"
@@ -260,8 +260,8 @@
 
     <RelativeLayout
         android:id="@+id/relativeLayout3"
-        android:layout_width="120dp"
-        android:layout_height="67dp"
+        android:layout_width="179dp"
+        android:layout_height="65dp"
         app:layout_constraintBottom_toTopOf="@+id/relativeLayout2"
         app:layout_constraintStart_toStartOf="parent">
 
