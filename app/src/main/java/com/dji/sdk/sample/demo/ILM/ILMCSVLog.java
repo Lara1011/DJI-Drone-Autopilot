@@ -77,7 +77,7 @@ public class ILMCSVLog {
                     updateCSVInfo();
                 }
             }
-        }, 0, 1000); // Update every 100ms
+        }, 0, 100); // Update every 100ms
     }
 
 
