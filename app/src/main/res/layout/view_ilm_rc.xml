@@ -15,7 +15,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TableRow
-            android:layout_width="571dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <TextView
@@ -106,7 +106,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_BatteryInt"
-                android:layout_width="wrap_content"
+                android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/_0per"
@@ -122,7 +122,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_DistanceInt"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/_0_m"
@@ -130,7 +130,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_XInt"
-                android:layout_width="wrap_content"
+                android:layout_width="66dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/_0"
@@ -189,40 +189,66 @@
 
     <RelativeLayout
         android:id="@+id/relativeLayout2"
-        android:layout_width="270dp"
-        android:layout_height="55dp"
+        android:layout_width="400dp"
+        android:layout_height="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
+
         <Button
-            android:id="@+id/btn_ILM_Stop"
+            android:id="@+id/btn_ILM_Take_Off"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginStart="1dp"
-            android:layout_marginBottom="0dp"
-            android:text="@string/stop" />
+            android:layout_marginStart="2dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/round_btn"
+            android:text="@string/take_off"
+            android:textColor="@color/common_text_color"
+            android:textSize="15sp" />
 
-        <Button
-            android:id="@+id/btn_ILM_Land"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginStart="0dp"
-            android:layout_marginBottom="0dp"
-            android:layout_toEndOf="@+id/btn_ILM_Stop"
-            android:text="@string/land" />
 
         <Button
             android:id="@+id/btn_ILM_GoTo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginStart="0dp"
-            android:layout_marginBottom="0dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginBottom="2dp"
             android:layout_toEndOf="@+id/btn_ILM_Land"
-            android:text="@string/go_to" />
+            android:background="@drawable/round_btn"
+            android:text="@string/go_to"
+            android:textColor="@color/common_text_color"
+            android:textSize="15sp" />
+
+
+        <Button
+            android:id="@+id/btn_ILM_Stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="2dp"
+            android:layout_marginBottom="2dp"
+            android:layout_toEndOf="@+id/btn_ILM_Take_Off"
+            android:background="@drawable/round_btn"
+            android:text="@string/stop"
+            android:textColor="@color/common_text_color"
+            android:textSize="15sp" />
+
+
+        <Button
+            android:id="@+id/btn_ILM_Land"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="2dp"
+            android:layout_marginBottom="2dp"
+            android:layout_toEndOf="@+id/btn_ILM_Stop"
+            android:background="@drawable/round_btn"
+            android:text="@string/land"
+            android:textColor="@color/common_text_color"
+            android:textSize="15sp" />
 
     </RelativeLayout>
 
@@ -260,20 +286,20 @@
 
     <RelativeLayout
         android:id="@+id/relativeLayout3"
-        android:layout_width="179dp"
-        android:layout_height="65dp"
+        android:layout_width="231dp"
+        android:layout_height="68dp"
         app:layout_constraintBottom_toTopOf="@+id/relativeLayout2"
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView
             android:id="@+id/textView_ILM_Latitude"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
+            android:layout_width="230dp"
+            android:layout_height="21dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="1dp"
-            android:layout_marginTop="1dp"
+            android:layout_marginTop="0dp"
             android:layout_marginEnd="0dp"
             android:text="@string/latitude_0"
             android:textColor="#FF1100" />
