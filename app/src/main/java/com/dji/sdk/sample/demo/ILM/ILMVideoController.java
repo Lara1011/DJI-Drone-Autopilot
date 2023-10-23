@@ -56,15 +56,6 @@ public class ILMVideoController {
         sourceListener = new VideoFeeder.PhysicalSourceListener() {
             @Override
             public void onChange(VideoFeeder.VideoFeed videoFeed, PhysicalSource newPhysicalSource) {
-                if (videoFeed == VideoFeeder.getInstance().getPrimaryVideoFeed()) {
-                    String newText = "Primary Source: " + newPhysicalSource.toString();
-                    TextView primaryVideoFeedTitle = null;
-                    ToastUtils.setResultToText(primaryVideoFeedTitle,newText);
-                }
-                if (videoFeed == VideoFeeder.getInstance().getSecondaryVideoFeed()) {
-                    TextView fpvVideoFeedTitle = null;
-                    ToastUtils.setResultToText(fpvVideoFeedTitle,"Secondary Source: " + newPhysicalSource.toString());
-                }
             }
         };
         if (VideoFeeder.getInstance() == null) return;
