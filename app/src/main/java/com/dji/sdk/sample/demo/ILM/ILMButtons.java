@@ -38,6 +38,9 @@ public class ILMButtons {
     protected Button takeOffbtn;
     private Context context;
     FlightController flightController = ModuleVerificationUtil.getFlightController();
+//    private double lat;
+//    private double lon;
+//    private float alt;
 
 
     public ILMButtons(Context context, View view) {
@@ -45,6 +48,9 @@ public class ILMButtons {
         stopbtn = view.findViewById(R.id.btn_ILM_Stop);
         landbtn = view.findViewById(R.id.btn_ILM_Land);
         takeOffbtn = view.findViewById(R.id.btn_ILM_Take_Off);
+//        lat = lat;
+//        lon = lon;
+//        alt = alt;
         this.context = context;
     }
 
@@ -64,7 +70,17 @@ public class ILMButtons {
 
 
     protected void stop() {
-
+        flightController.getFlightAssistant().setLandingProtectionEnabled(true, new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    showToast(context.getResources().getString(R.string.success));
+                    disable(flightController);
+                } else {
+                    showToast(djiError.getDescription());
+                }
+            }
+        });
     }
 
 
@@ -83,15 +99,56 @@ public class ILMButtons {
 
 
     protected void goTo() {
+        FollowMeMissionOperator followMeMissionOperator = MissionControl.getInstance().getFollowMeMissionOperator();
 
+// Assuming you have latitude and longitude for the destination
+        double destinationLatitude = 32.101355;
+        double destinationLongitude = 35.202021;
+
+        followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
+                destinationLatitude, destinationLongitude, 30f
+        ), new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    showToast("Go To mission started successfully");
+                } else {
+                    showToast("Go To mission start failed: " + djiError.getDescription());
+                }
+            }
+        });
     }
 
     private void stopOnPlace() {
+        FlightControlData flightControlData = new FlightControlData(0,0,0,0);
+        flightControlData.setVerticalThrottle(0);
+        flightControlData.setRoll(0);
+        flightControlData.setPitch(0);
+        flightControlData.setYaw(0);
 
+        FlightController flightController = DJISampleApplication.getAircraftInstance().getFlightController();
+        if (flightController.isVirtualStickControlModeAvailable()) {
+            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+            flightController.sendVirtualStickFlightControlData(flightControlData,new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                }
+            });
+        }
     }
 
     public void disable(FlightController flightController) {
-
+        stopOnPlace();
+        flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    showToast(context.getResources().getString(R.string.success));
+                } else {
+                    showToast(djiError.getDescription());
+                }
+            }
+        });
     }
 }
 
