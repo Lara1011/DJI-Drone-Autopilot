@@ -70,17 +70,47 @@ public class ILMButtons {
 
 
     protected void stop() {
-        flightController.getFlightAssistant().setLandingProtectionEnabled(true, new CommonCallbacks.CompletionCallback() {
+        flightController.cancelGoHome(new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
                 if (djiError == null) {
                     showToast(context.getResources().getString(R.string.success));
-                    disable(flightController);
                 } else {
                     showToast(djiError.getDescription());
                 }
             }
         });
+        flightController.cancelTakeoff(new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    showToast(context.getResources().getString(R.string.success));
+                } else {
+                    showToast(djiError.getDescription());
+                }
+            }
+        });
+        flightController.cancelLanding(new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    showToast(context.getResources().getString(R.string.success));
+                } else {
+                    showToast(djiError.getDescription());
+                }
+            }
+        });
+//        flightController.getFlightAssistant().setLandingProtectionEnabled(true, new CommonCallbacks.CompletionCallback() {
+//            @Override
+//            public void onResult(DJIError djiError) {
+//                if (djiError == null) {
+//                    showToast(context.getResources().getString(R.string.success));
+//                    disable(flightController);
+//                } else {
+//                    showToast(djiError.getDescription());
+//                }
+//            }
+//        });
     }
 
 
