@@ -253,6 +253,23 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/relativeLayout4"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btn_ILM_Record"
+            android:layout_width="47dp"
+            android:layout_height="47dp"
+            android:background="@drawable/ilmstartrecord"
+            tools:layout_editor_absoluteY="365dp" />
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/relativeLayout"
         android:layout_width="391dp"
         android:layout_height="206dp"
@@ -344,5 +361,8 @@
         app:layout_constraintEnd_toStartOf="@+id/relativeLayout"
         app:layout_constraintTop_toTopOf="@+id/tableLayout"
         app:layout_constraintVertical_bias="0.787" />
+
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
