@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat;
 import com.dji.sdk.sample.R;
 import com.dji.sdk.sample.internal.controller.DJISampleApplication;
 import com.dji.sdk.sample.internal.controller.MainActivity;
+import com.dji.sdk.sample.internal.utils.DialogUtils;
 import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
 import com.dji.sdk.sample.internal.utils.VideoFeedView;
 import com.dji.sdk.sample.internal.view.PresentableView;
@@ -52,6 +53,8 @@ public class ILMRemoteControllerView extends RelativeLayout
     private Button GoTobtn;
     private Button Stopbtn;
     private Button Landbtn;
+    private Button TakeOffbtn;
+    private Button Recordbtn;
     private MapView mapView = null;
     private TextView Battery;
     private TextView x;
@@ -68,28 +71,18 @@ public class ILMRemoteControllerView extends RelativeLayout
     private TextView Yaw;
     private VideoFeedView videoFeedView;
     private View view;
-    private ILMController controller;
     protected DJICodecManager mCodecManager = null;
-    private SetCallback setBandwidthCallback;
-    private VideoFeeder.PhysicalSourceListener sourceListener;
-    private Handler handler = new Handler();
     private ILMMapController mapController;
     private ILMVideoController videoController;
     private ILMInfoUpdate infoUpdate;
     private ILMCSVLog ilmLog;
-    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 99999; // Use any unique value
-
+    private ILMButtons buttons;
 
     public ILMRemoteControllerView(Context context) {
         super(context);
         ctx = context;
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            // Request the permission
-            ActivityCompat.requestPermissions((Activity) context, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
-        }
         init(context);
         videoController = new ILMVideoController(videoFeedView);
-
         showToast("Log file created");
     }
 
@@ -105,6 +98,9 @@ public class ILMRemoteControllerView extends RelativeLayout
         Stopbtn = (Button) findViewById(R.id.btn_ILM_Stop);
         Landbtn = (Button) findViewById(R.id.btn_ILM_Land);
         GoTobtn = (Button) findViewById(R.id.btn_ILM_GoTo);
+        TakeOffbtn = (Button) findViewById(R.id.btn_ILM_Take_Off);
+
+        Recordbtn = (Button) findViewById(R.id.btn_ILM_Record);
 
         x = (TextView) findViewById(R.id.textView_ILM_XInt);
         y = (TextView) findViewById(R.id.textView_ILM_YInt);
@@ -132,34 +128,33 @@ public class ILMRemoteControllerView extends RelativeLayout
 
         ilmLog = new ILMCSVLog(ctx, infoUpdate);
         ilmLog.createLogBrain();
-        Stopbtn.setOnClickListener(this);
-        Landbtn.setOnClickListener(this);
-        GoTobtn.setOnClickListener(this);
+        buttons = new ILMButtons(ctx, this);
+        buttons.takeOffbtn.setOnClickListener(this);
+        buttons.stopbtn.setOnClickListener(this);
+        buttons.landbtn.setOnClickListener(this);
+        buttons.goTobtn.setOnClickListener(this);
+        buttons.recordbtn.setOnClickListener(this);
         videoFeedView.setCoverView(view);
     }
 
     @Override
     public void onClick(View v) {
-        FlightController flightController = ModuleVerificationUtil.getFlightController();
-        if (flightController != null) {
-            flightController.setYawControlMode(YawControlMode.ANGLE);
-            flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
-            flightController.setYawControlMode(YawControlMode.ANGLE);
-            flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
-            flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
-            switch (v.getId()) {
-                case R.id.btn_ILM_Stop:
-                    flightController.getFlightAssistant().setLandingProtectionEnabled(true, new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            if (djiError != null) showToast("" + djiError);
-                            else showToast("Landing protection DISABLED!");
-                        }
-                    });
-                    controller.disable(flightController);
-                case R.id.btn_ILM_GoTo:
-                case R.id.btn_ILM_Land:
-            }
+        switch (v.getId()) {
+            case R.id.btn_ILM_Take_Off:
+                buttons.takeOff();
+                break;
+            case R.id.btn_ILM_Stop:
+                buttons.stop();
+                break;
+            case R.id.btn_ILM_Land:
+                buttons.land();
+                break;
+            case R.id.btn_ILM_GoTo:
+                buttons.goTo();
+                break;
+            case R.id.btn_ILM_Record:
+                buttons.isRecording = !buttons.isRecording;
+                buttons.record();
         }
     }
 
@@ -233,7 +228,6 @@ public class ILMRemoteControllerView extends RelativeLayout
     @Override
     protected void onDetachedFromWindow() {
         DJISampleApplication.getEventBus().post(new MainActivity.RequestEndFullScreenEvent());
-        //infoUpdate.closeWriter();
         ilmLog.closeLogBrain();
         super.onDetachedFromWindow();
     }
