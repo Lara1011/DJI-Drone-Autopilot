@@ -5,13 +5,10 @@
 
 package com.dji.sdk.sample.demo.ILM;
 
-
 import android.content.Context;
-
 
 import android.os.Environment;
 import android.widget.Toast;
-
 
 import java.io.File;
 import java.io.FileWriter;
@@ -32,14 +29,11 @@ public class ILMCSVLog {
         this.infoUpdate = infoUpdate;
     }
 
-
     private void createCSVFile() {
-        String filename = "ILM_DJI_Drone_Data.csv";
+        String filename = "ILM_DJI_Drone_Data-" + infoUpdate.getDate() + ".csv";
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
         File file = new File(path, filename);
         boolean isFileExists = file.exists();
-
-
         try {
             writer = new FileWriter(file, true); // Append mode
             if (!isFileExists) {
@@ -50,7 +44,6 @@ public class ILMCSVLog {
             e.printStackTrace();
         }
     }
-
 
     private void closeCSVFile() {
         if (writer != null) {
@@ -66,7 +59,6 @@ public class ILMCSVLog {
         }
     }
 
-
     private void startUpdatingCounter() {
         // Start the timer to update the counter
         counterTimer = new Timer();
@@ -79,7 +71,6 @@ public class ILMCSVLog {
             }
         }, 0, 100); // Update every 100ms
     }
-
 
     private void updateCSVInfo() {
         if (writer != null) {
@@ -104,18 +95,14 @@ public class ILMCSVLog {
         }
     }
 
-
     protected void createLogBrain() {
         createCSVFile();
         startUpdatingCounter();
     }
 
-
     protected void closeLogBrain() {
         closeCSVFile();
     }
-
-
 }
 
 
