@@ -13,6 +13,9 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,7 +33,8 @@ public class ILMCSVLog {
     }
 
     private void createCSVFile() {
-        String filename = "ILM_DJI_Drone_Data-" + infoUpdate.getDate() + ".csv";
+        String currDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date());
+        String filename = "ILM_DJI_Drone_Data -" + currDate + ".csv";
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
         File file = new File(path, filename);
         boolean isFileExists = file.exists();
