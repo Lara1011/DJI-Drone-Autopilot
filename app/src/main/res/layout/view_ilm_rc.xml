@@ -7,8 +7,8 @@
 
     <TableLayout
         android:id="@+id/tableLayout"
-        android:layout_width="593dp"
-        android:layout_height="35dp"
+        android:layout_width="654dp"
+        android:layout_height="37dp"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,7 +44,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_XTxt"
-                android:layout_width="69dp"
+                android:layout_width="81dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="x"
@@ -52,7 +52,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_YTxt"
-                android:layout_width="66dp"
+                android:layout_width="78dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="y"
@@ -60,7 +60,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_ZTxt"
-                android:layout_width="65dp"
+                android:layout_width="75dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="z"
@@ -76,7 +76,7 @@
 
             <TextView
                 android:id="@+id/textView_ILM_RollTxt"
-                android:layout_width="38dp"
+                android:layout_width="49dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="roll"
@@ -85,7 +85,7 @@
             <TextView
                 android:id="@+id/textView_ILM_YawTxt"
                 android:layout_width="38dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="yaw"
                 android:textColor="@color/black" />
@@ -303,21 +303,22 @@
 
     <RelativeLayout
         android:id="@+id/relativeLayout3"
-        android:layout_width="231dp"
-        android:layout_height="68dp"
+        android:layout_width="243dp"
+        android:layout_height="70dp"
         app:layout_constraintBottom_toTopOf="@+id/relativeLayout2"
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView
             android:id="@+id/textView_ILM_Latitude"
-            android:layout_width="230dp"
-            android:layout_height="21dp"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="1dp"
-            android:layout_marginTop="0dp"
+            android:layout_marginTop="1dp"
             android:layout_marginEnd="0dp"
+            android:layout_marginBottom="2dp"
             android:text="@string/latitude_0"
             android:textColor="#FF1100" />
 
@@ -354,15 +355,64 @@
     <org.osmdroid.views.MapView
         android:id="@+id/mapView_ILM"
         titlesource='Mapnik'
-        android:layout_width="168dp"
-        android:layout_height="117dp"
+        android:layout_width="252dp"
+        android:layout_height="174dp"
         android:layout_marginEnd="32dp"
         app:layout_constraintBottom_toTopOf="@+id/relativeLayout3"
         app:layout_constraintEnd_toStartOf="@+id/relativeLayout"
         app:layout_constraintTop_toTopOf="@+id/tableLayout"
         app:layout_constraintVertical_bias="0.787" />
 
+    <Button
+        android:id="@+id/btn_ILM_Waypoint"
+        android:layout_width="47dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="184dp"
+        android:background="@drawable/ilmwaypointslist"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/relativeLayout4"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/relativeLayout2"
+        />
 
+    <RelativeLayout
+        android:id="@+id/waypointButtonsLayout"
+        android:layout_width="148dp"
+        android:layout_height="99dp"
+        android:layout_below="@+id/btn_ILM_Waypoint"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_ILM_Waypoint"
+        app:layout_constraintEnd_toStartOf="@+id/relativeLayout"
+        app:layout_constraintTop_toBottomOf="@+id/mapView_ILM">
+
+
+        <Button
+            android:id="@+id/btn_ILM_Add_Waypoint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="1dp"
+            android:layout_marginBottom="52dp"
+            android:background="@drawable/round_btn"
+            android:text="@string/add_waypoint"
+            android:textColor="@color/common_text_color"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/btn_ILM_Repeat_Route"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/btn_ILM_Add_Waypoint"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="2dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/round_btn"
+            android:text="@string/repeat_route"
+            android:textColor="@color/common_text_color"
+            android:textSize="15sp" />
+
+    </RelativeLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

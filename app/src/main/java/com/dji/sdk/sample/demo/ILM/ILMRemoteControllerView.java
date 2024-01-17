@@ -2,14 +2,9 @@ package com.dji.sdk.sample.demo.ILM;
 
 import static com.dji.sdk.sample.internal.utils.ToastUtils.showToast;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
-import android.os.Build;
-import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.TextureView;
@@ -20,27 +15,14 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.dji.sdk.sample.R;
 import com.dji.sdk.sample.internal.controller.DJISampleApplication;
 import com.dji.sdk.sample.internal.controller.MainActivity;
-import com.dji.sdk.sample.internal.utils.DialogUtils;
-import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
 import com.dji.sdk.sample.internal.utils.VideoFeedView;
 import com.dji.sdk.sample.internal.view.PresentableView;
 
-import dji.common.error.DJIError;
-import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
-import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
-import dji.common.flightcontroller.virtualstick.VerticalControlMode;
-import dji.common.flightcontroller.virtualstick.YawControlMode;
-import dji.common.util.CommonCallbacks;
-import dji.keysdk.callback.SetCallback;
-import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
-import dji.sdk.flightcontroller.FlightController;
 
 import org.osmdroid.views.MapView;
 
@@ -55,6 +37,9 @@ public class ILMRemoteControllerView extends RelativeLayout
     private Button Landbtn;
     private Button TakeOffbtn;
     private Button Recordbtn;
+    private Button Waypointbtn;
+    private Button AddWaypointbtn;
+    private Button RepeatRoutebtn;
     private MapView mapView = null;
     private TextView Battery;
     private TextView x;
@@ -76,14 +61,15 @@ public class ILMRemoteControllerView extends RelativeLayout
     private ILMVideoController videoController;
     private ILMInfoUpdate infoUpdate;
     private ILMCSVLog ilmLog;
+    private ILMWaypoints ilmWaypoints;
     private ILMButtons buttons;
+    private RelativeLayout waypointButtonsLayout;
 
     public ILMRemoteControllerView(Context context) {
         super(context);
         ctx = context;
         init(context);
         videoController = new ILMVideoController(videoFeedView);
-        showToast("Log file created");
     }
 
     private void init(Context context) {
@@ -101,6 +87,11 @@ public class ILMRemoteControllerView extends RelativeLayout
         TakeOffbtn = (Button) findViewById(R.id.btn_ILM_Take_Off);
 
         Recordbtn = (Button) findViewById(R.id.btn_ILM_Record);
+
+        Waypointbtn = (Button) findViewById(R.id.btn_ILM_Waypoint);
+        AddWaypointbtn = (Button) findViewById(R.id.btn_ILM_Add_Waypoint);
+        RepeatRoutebtn = (Button) findViewById(R.id.btn_ILM_Repeat_Route);
+
 
         x = (TextView) findViewById(R.id.textView_ILM_XInt);
         y = (TextView) findViewById(R.id.textView_ILM_YInt);
@@ -123,17 +114,24 @@ public class ILMRemoteControllerView extends RelativeLayout
         videoFeedView = (VideoFeedView) findViewById(R.id.videoFeedView_ILM);
         view = (View) findViewById(R.id.view_ILM_coverView);
 
+        waypointButtonsLayout = (RelativeLayout) findViewById(R.id.waypointButtonsLayout);
+
         infoUpdate = new ILMInfoUpdate(Battery,x,y,z,latitude, longitude,altitude,DateTime,Speed,Distance,Pitch,Roll,Yaw);
         infoUpdate.updateDateTime();
 
         ilmLog = new ILMCSVLog(ctx, infoUpdate);
         ilmLog.createLogBrain();
+        ilmWaypoints = new ILMWaypoints(ctx, infoUpdate);
+        ilmWaypoints.createLogBrain();
         buttons = new ILMButtons(ctx, this);
         buttons.takeOffbtn.setOnClickListener(this);
         buttons.stopbtn.setOnClickListener(this);
         buttons.landbtn.setOnClickListener(this);
         buttons.goTobtn.setOnClickListener(this);
         buttons.recordbtn.setOnClickListener(this);
+        buttons.Waypointbtn.setOnClickListener(this);
+        buttons.AddWaypointbtn.setOnClickListener(this);
+        buttons.RepeatRoutebtn.setOnClickListener(this);
         videoFeedView.setCoverView(view);
     }
 
@@ -155,8 +153,18 @@ public class ILMRemoteControllerView extends RelativeLayout
             case R.id.btn_ILM_Record:
                 buttons.isRecording = !buttons.isRecording;
                 buttons.record();
+                break;
+            case R.id.btn_ILM_Waypoint:
+                buttons.WaypointsList();
+            case R.id.btn_ILM_Add_Waypoint:
+                buttons.AddWaypoint(ilmWaypoints);
+                break;
+            case R.id.btn_ILM_Repeat_Route:
+                buttons.RepeatRoute();
+                break;
         }
     }
+
 
     @Override
     public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
@@ -229,6 +237,7 @@ public class ILMRemoteControllerView extends RelativeLayout
     protected void onDetachedFromWindow() {
         DJISampleApplication.getEventBus().post(new MainActivity.RequestEndFullScreenEvent());
         ilmLog.closeLogBrain();
+        //ilmGoToWaypoints.closeLogBrain();
         super.onDetachedFromWindow();
     }
 }

@@ -378,6 +378,8 @@
     <string name="_0_m">0 m</string>
     <string name="_0">0</string>
     <string name="take_off">Take_Off</string>
+    <string name="add_waypoint">ADD WAYPOINT</string>
+    <string name="repeat_route">REPEAT ROUTE</string>
 
 
 </resources>
