@@ -148,7 +148,7 @@ public class ILMRemoteControllerView extends RelativeLayout
                 buttons.land();
                 break;
             case R.id.btn_ILM_GoTo:
-                buttons.goTo();
+                buttons.goTo(ilmWaypoints);
                 break;
             case R.id.btn_ILM_Record:
                 buttons.isRecording = !buttons.isRecording;
@@ -156,11 +156,12 @@ public class ILMRemoteControllerView extends RelativeLayout
                 break;
             case R.id.btn_ILM_Waypoint:
                 buttons.WaypointsList();
+                break;
             case R.id.btn_ILM_Add_Waypoint:
                 buttons.AddWaypoint(ilmWaypoints);
                 break;
             case R.id.btn_ILM_Repeat_Route:
-                buttons.RepeatRoute();
+                buttons.RepeatRoute(ilmWaypoints);
                 break;
         }
     }
@@ -237,7 +238,7 @@ public class ILMRemoteControllerView extends RelativeLayout
     protected void onDetachedFromWindow() {
         DJISampleApplication.getEventBus().post(new MainActivity.RequestEndFullScreenEvent());
         ilmLog.closeLogBrain();
-        //ilmGoToWaypoints.closeLogBrain();
+        ilmWaypoints.closeLogBrain();
         super.onDetachedFromWindow();
     }
 }

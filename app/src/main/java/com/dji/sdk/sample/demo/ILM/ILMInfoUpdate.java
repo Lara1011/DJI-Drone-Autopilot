@@ -4,10 +4,7 @@ import static com.google.android.gms.internal.zzahn.runOnUiThread;
 
 import android.os.Environment;
 import android.os.Handler;
-import android.util.Log;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -15,9 +12,6 @@ import com.dji.sdk.sample.internal.controller.DJISampleApplication;
 import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
 import com.dji.sdk.sample.internal.view.PresentableView;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -51,16 +45,6 @@ public class ILMInfoUpdate implements PresentableView {
     private Handler xyzUpdateHandler = new Handler();
 
 
-
-    private static final String TAG = "ILMStatusBar";
-    private static final String CSV_HEADER = "Date,Distance,Battery,Speed,X,Y,Z,Latitude,Longitude,Altitude,Roll,Pitch,Yaw";
-    private static final String CSV_FILENAME = "sdcard/droneLog/ILM_Log_File_aircraft_data.csv";
-
-    private Handler csvUpdateHandler = new Handler();
-    private File csvFile;
-    private FileWriter csvWriter;
-    private static final int CSV_UPDATE_INTERVAL_MS = 100; // Update every 100 milliseconds
-
     public ILMInfoUpdate(TextView battery, TextView x, TextView y, TextView z, TextView latitude, TextView longtitude, TextView altitude, TextView dateTime,
                          TextView speed, TextView distance, TextView pitch, TextView roll, TextView yaw) {
         this.Battery = battery;
@@ -76,8 +60,6 @@ public class ILMInfoUpdate implements PresentableView {
         this.Pitch = pitch;
         this.Roll = roll;
         this.Yaw = yaw;
-        //createCsvFile();
-        //startCsvUpdateTask();
     }
 
     public String getBattery() {
@@ -142,67 +124,6 @@ public class ILMInfoUpdate implements PresentableView {
 
     public String getYaw() {
         return Yaw.getText().toString();
-    }
-
-
-    private void createCsvFile() {
-        try {
-            // Check if external storage is available
-            if (isExternalStorageWritable()) {
-                File dir = new File(Environment.getExternalStorageDirectory(), "AircraftData");
-                if (!dir.exists()) {
-                    if (!dir.mkdirs()) {
-                        Log.e(TAG, "Failed to create directory for CSV file");
-                        return;
-                    }
-                }
-                csvFile = new File(dir, CSV_FILENAME);
-                csvWriter = new FileWriter(csvFile,true);
-                if (csvFile.length() == 0) {
-                    csvWriter.append(CSV_HEADER);
-                    csvWriter.append("\n");
-                }
-                csvWriter.flush();
-            } else {
-                Log.e(TAG, "External storage is not writable");
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Error creating CSV file: " + e.getMessage());
-        }
-    }
-
-
-
-
-
-    public void uploadToCsv() {
-        String data = getDate() + "," + getDistance() + "," + getBattery() + "," + getSpeed() + ","
-                + getILMX() + "," + getILMY() + "," + getILMZ() + "," + getLatitude() + ","
-                + getLongitude() + "," + getAltitude() + "," + getRoll() + "," + getPitch() + ","
-                + getYaw();
-
-
-        // Write the data to the CSV file
-        if (csvWriter != null) {
-            try {
-                csvWriter.append(data);
-                csvWriter.append("\n");
-                csvWriter.flush();
-            } catch (IOException e) {
-                Log.e(TAG, "Error writing to CSV file: " + e.getMessage());
-            }
-        }
-    }
-
-
-    private void startCsvUpdateTask() {
-        csvUpdateHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                uploadToCsv(); // Call the function to update the CSV file
-                csvUpdateHandler.postDelayed(this, CSV_UPDATE_INTERVAL_MS);
-            }
-        }, CSV_UPDATE_INTERVAL_MS);
     }
 
 
@@ -333,16 +254,6 @@ public class ILMInfoUpdate implements PresentableView {
                     }
                 }
             });
-        }
-    }
-
-    public void closeWriter(){
-        if (csvWriter != null) {
-            try {
-                csvWriter.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error closing CSV writer: " + e.getMessage());
-            }
         }
     }
 

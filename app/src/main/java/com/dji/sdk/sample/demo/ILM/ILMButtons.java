@@ -2,13 +2,18 @@ package com.dji.sdk.sample.demo.ILM;
 
 import static com.dji.sdk.sample.internal.utils.ToastUtils.showToast;
 
-import android.app.Notification;
 import android.content.Context;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.dji.sdk.sample.R;
 
@@ -18,31 +23,36 @@ import com.dji.sdk.sample.internal.utils.ToastUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.virtualstick.FlightControlData;
 import dji.common.flightcontroller.virtualstick.VerticalControlMode;
-import dji.common.mission.followme.FollowMeHeading;
-import dji.common.mission.followme.FollowMeMission;
 import dji.common.mission.waypoint.Waypoint;
 import dji.common.mission.waypoint.WaypointAction;
 import dji.common.mission.waypoint.WaypointActionType;
 import dji.common.mission.waypoint.WaypointMission;
-import dji.common.model.LocationCoordinate2D;
+import dji.common.mission.waypoint.WaypointMissionDownloadEvent;
+import dji.common.mission.waypoint.WaypointMissionExecutionEvent;
+import dji.common.mission.waypoint.WaypointMissionFinishedAction;
+import dji.common.mission.waypoint.WaypointMissionFlightPathMode;
+import dji.common.mission.waypoint.WaypointMissionHeadingMode;
+import dji.common.mission.waypoint.WaypointMissionState;
+import dji.common.mission.waypoint.WaypointMissionUploadEvent;
+import dji.common.mission.waypoint.WaypointTurnMode;
 import dji.common.util.CommonCallbacks;
-import dji.midware.data.model.P3.DataOsdGetPushCommon;
 import dji.sdk.camera.Camera;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.media.DownloadListener;
 import dji.sdk.media.MediaFile;
 import dji.sdk.media.MediaManager;
-import dji.sdk.mission.followme.FollowMeMissionOperator;
 import dji.sdk.mission.waypoint.WaypointMissionOperator;
 import dji.sdk.mission.MissionControl;
-import dji.sdk.products.Aircraft;
+import dji.sdk.mission.waypoint.WaypointMissionOperatorListener;
+import dji.sdk.sdkmanager.DJISDKManager;
+
 
 public class ILMButtons {
     protected Button goTobtn;
@@ -53,14 +63,22 @@ public class ILMButtons {
     protected Button Waypointbtn;
     protected Button AddWaypointbtn;
     protected Button RepeatRoutebtn;
-    private Context context;
+    private final Context context;
     public boolean isRecording = false;
+    private boolean isRoute = false;
     private RelativeLayout waypointButtonsLayout;
+    private WaypointMission.Builder builder;
+    String latitude = "32";
+    String longitude = "35";
+    String altitude = "0";
+    String pitch = "0";
+
+    private WaypointMissionOperator waypointMissionOperator = null;
+    private WaypointMission mission = null;
+    private WaypointMissionOperatorListener listener;
+    private final static int WAYPOINT_COUNT = 4;
 
     FlightController flightController = ModuleVerificationUtil.getFlightController();
-//    private double lat;
-//    private double lon;
-//    private float alt;
 
 
     public ILMButtons(Context context, View view) {
@@ -75,10 +93,6 @@ public class ILMButtons {
 
         waypointButtonsLayout = (RelativeLayout) view.findViewById(R.id.waypointButtonsLayout);
 
-
-//        lat = lat;
-//        lon = lon;
-//        alt = alt;
         this.context = context;
     }
 
@@ -128,6 +142,15 @@ public class ILMButtons {
                 }
             }
         });
+
+//        if(waypointMissionOperator != null){
+//            waypointMissionOperator.stopMission(new CommonCallbacks.CompletionCallback() {
+//                @Override
+//                public void onResult(DJIError djiError) {
+//                    ToastUtils.setResultToToast(djiError != null ? "" : djiError.getDescription());
+//                }
+//            });
+//        }
 //        flightController.getFlightAssistant().setLandingProtectionEnabled(true, new CommonCallbacks.CompletionCallback() {
 //            @Override
 //            public void onResult(DJIError djiError) {
@@ -155,26 +178,147 @@ public class ILMButtons {
         });
     }
 
+    protected void goTo(ILMWaypoints ilmWaypoints) {
+        waypointMissionOperator = MissionControl.getInstance().getWaypointMissionOperator();
+        setUpListener();
+        mission = createMission(ilmWaypoints);
+        if (mission != null) {
+            Log.i("load", "started loading mission");
+            waypointMissionOperator.getLoadedMissionBuilder();
+            Log.i("Loaded mission: " , waypointMissionOperator.getLoadedMissionBuilder().toString());
+            DJIError loadError = waypointMissionOperator.loadMission(mission);
+            Log.i("load", loadError != null ? loadError.getDescription() : "Load success");
+            if (loadError == null) {
+                uploadMission();
+            } else {
+                // Print more details about the mission for debugging
+                Log.e("Mission Details", "Mission: " + mission.toString());
+            }
+        } else {
+            ToastUtils.setResultToToast("Mission is null");
+        }
+    }
 
-    protected void goTo() {
-        FollowMeMissionOperator followMeMissionOperator = MissionControl.getInstance().getFollowMeMissionOperator();
+    private void uploadMission() {
+        if (WaypointMissionState.READY_TO_RETRY_UPLOAD.equals(waypointMissionOperator.getCurrentState())
+                || WaypointMissionState.READY_TO_UPLOAD.equals(waypointMissionOperator.getCurrentState())) {
+            waypointMissionOperator.uploadMission(new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError uploadError) {
+                    ToastUtils.setResultToToast(uploadError != null ? uploadError.getDescription() : "upload success");
 
-// Assuming you have latitude and longitude for the destination
-        double destinationLatitude = 32.101355;
-        double destinationLongitude = 35.202021;
+                    if (uploadError == null) {
+                        // Mission uploaded successfully, proceed to start
+                        startWaypointMission();
+                    }
+                }
+            });
+        } else {
+            ToastUtils.setResultToToast("Wait for mission to be loaded");
+        }
+    }
 
-        followMeMissionOperator.startMission(new FollowMeMission(FollowMeHeading.TOWARD_FOLLOW_POSITION,
-                destinationLatitude, destinationLongitude, 30f
-        ), new CommonCallbacks.CompletionCallback() {
+    private void startWaypointMission() {
+        if (waypointMissionOperator != null && mission != null) {
+            waypointMissionOperator.startMission(new CommonCallbacks.CompletionCallback() {
+                @Override
+                public void onResult(DJIError djiError) {
+                    ToastUtils.setResultToToast(djiError != null ? djiError.getDescription() : "Start success");
+                }
+            });
+        } else {
+            ToastUtils.setResultToToast("Mission or mission operator is null");
+        }
+    }
+
+    private void setUpListener() {
+        // Example of Listener
+        listener = new WaypointMissionOperatorListener() {
             @Override
-            public void onResult(DJIError djiError) {
-                if (djiError == null) {
-                    showToast("Go To mission started successfully");
-                } else {
-                    showToast("Go To mission start failed: " + djiError.getDescription());
+            public void onDownloadUpdate(@NonNull WaypointMissionDownloadEvent waypointMissionDownloadEvent) {
+                // Example of Download Listener
+                if (waypointMissionDownloadEvent.getProgress() != null
+                        && waypointMissionDownloadEvent.getProgress().isSummaryDownloaded
+                        && waypointMissionDownloadEvent.getProgress().downloadedWaypointIndex == (WAYPOINT_COUNT - 1)) {
+                    ToastUtils.setResultToToast("Mission is downloaded successfully");
                 }
             }
-        });
+
+            @Override
+            public void onUploadUpdate(@NonNull WaypointMissionUploadEvent waypointMissionUploadEvent) {
+                // Example of Upload Listener
+                if (waypointMissionUploadEvent.getProgress() != null
+                        && waypointMissionUploadEvent.getProgress().isSummaryUploaded
+                        && waypointMissionUploadEvent.getProgress().uploadedWaypointIndex == (WAYPOINT_COUNT - 1)) {
+                    ToastUtils.setResultToToast("Mission is uploaded successfully");
+                }
+            }
+
+            @Override
+            public void onExecutionUpdate(@NonNull WaypointMissionExecutionEvent waypointMissionExecutionEvent) {
+            }
+
+            @Override
+            public void onExecutionStart() {
+                ToastUtils.setResultToToast("Mission started");
+            }
+
+            @Override
+            public void onExecutionFinish(@Nullable DJIError djiError) {
+            }
+        };
+
+        if (waypointMissionOperator != null) {
+            waypointMissionOperator.addListener(listener);
+        }
+    }
+
+
+    private WaypointMission createMission(ILMWaypoints ilmWaypoints){
+        builder = new WaypointMission.Builder();
+        builder.maxFlightSpeed(15)  // Set maximum flight speed
+                .autoFlightSpeed(8)  // Set automatic flight speed
+                .flightPathMode(WaypointMissionFlightPathMode.NORMAL)
+                .finishedAction(WaypointMissionFinishedAction.NO_ACTION)
+                .headingMode(WaypointMissionHeadingMode.AUTO);
+        HashMap<String, String> waypoints = ilmWaypoints.getWaypoints();
+        if (isRoute) {
+            for (int i = 0; i < waypoints.size(); i++) {
+                latitude = waypoints.get("Latitude" + i);
+                longitude = waypoints.get("Longitude" + i);
+                altitude = waypoints.get("Altitude" + i);
+                pitch = waypoints.get("Pitch" + i);
+
+                Waypoint waypoint = new Waypoint(Double.parseDouble(latitude), Double.parseDouble(longitude), Float.parseFloat(altitude));
+                waypoint.turnMode = WaypointTurnMode.CLOCKWISE;
+                waypoint.addAction(new WaypointAction(WaypointActionType.ROTATE_AIRCRAFT, Integer.parseInt(pitch)));
+                builder.addWaypoint(waypoint);
+            }
+            isRoute = false;
+            return builder.build();
+        } else {
+            int size = waypoints.size();
+            if (size > 0) {
+                latitude = waypoints.get("Latitude" + (size/4 - 1));
+                longitude = waypoints.get("Longitude" + (size/4 - 1));
+                altitude = waypoints.get("Altitude" + (size/4 - 1));
+                pitch = waypoints.get("Pitch" + (size/4 - 1));
+//                waypoints.remove("Latitude" + (size/4 - 1));
+//                waypoints.remove("Longitude" + (size/4 - 1));
+//                waypoints.remove("Altitude" + (size/4 - 1));
+//                waypoints.remove("Pitch" + (size/4 - 1));
+            }
+        }
+
+        Waypoint waypoint = new Waypoint(Double.parseDouble(latitude), Double.parseDouble(longitude), Float.parseFloat(altitude));
+        waypoint.turnMode = WaypointTurnMode.CLOCKWISE;
+        waypoint.addAction(new WaypointAction(WaypointActionType.ROTATE_AIRCRAFT, Integer.parseInt(pitch)));
+        builder.addWaypoint(new Waypoint(32.1012839, 35.2020039, Float.parseFloat(altitude)));
+        builder.addWaypoint(waypoint);
+
+        Log.i("builder waypoints: " , builder.getWaypointList().toString());
+
+        return builder.build();
     }
 
     private void stopOnPlace() {
@@ -211,21 +355,16 @@ public class ILMButtons {
 
     public void record() {
         if (isRecording) {
-
-            // Start recording
             startRecording();
             recordbtn.setBackgroundResource(R.drawable.ilmstoprecord);
         } else {
-            // Stop recording
             stopRecording();
             recordbtn.setBackgroundResource(R.drawable.ilmstartrecord);
         }
     }
 
     private void startRecording() {
-        // Check if the camera is currently recording
         if (isRecording) {
-            // Start recording
             DJISampleApplication.getProductInstance().getCamera().startRecordVideo(new CommonCallbacks.CompletionCallback() {
                 @Override
                 public void onResult(DJIError djiError) {
@@ -249,83 +388,11 @@ public class ILMButtons {
                 if (djiError == null) {
                     showToast("Recording stopped");
                     isRecording = false;
-                    moveVideoToInternalStorage();
                 } else {
                     showToast("Failed to stop recording: " + djiError.getDescription());
                 }
             }
         });
-    }
-    private void moveVideoToInternalStorage() {
-        // Creating an internal storage directory
-        File internalStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "ILM-DroneVideos");
-        if (!internalStorageDir.exists()) {
-            internalStorageDir.mkdirs();
-        }
-
-        // Creating a destination file path
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String destinationPath = internalStorageDir + "/video_" + timeStamp + "/";
-
-        // Delay for 2 seconds (adjust the delay time as needed)
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // Call the method to download the video after the delay
-                downloadVideo();
-
-                //showToast("Video saved to internal storage: " + destinationPath);
-            }
-        }, 5000);
-    }
-    private void downloadVideo() {
-        Camera camera = DJISampleApplication.getAircraftInstance().getCamera();
-        if (camera != null) {
-            showToast("camera successful");
-            MediaManager mediaManager = camera.getMediaManager();
-            if (mediaManager != null) {
-                showToast("media manager successful");
-                List<MediaFile> mediaFiles = mediaManager.getSDCardFileListSnapshot();
-                showToast("mediaFiles size: " + mediaFiles.size());
-
-//                mediaFiles = mediaManager.getInternalStorageFileListSnapshot();
-//                showToast("mediaFiles size: " + mediaFiles.size());
-                if (!mediaFiles.isEmpty()) {
-                    showToast("mediaFiles not empty");
-                    MediaFile mediaFile = mediaFiles.get(mediaManager.getSDCardFileListSnapshot().size() - 1);
-                    File destinationFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)+"\"ILM-DroneVideos\"", "ILMDownloadedVideo.mp4");
-                    mediaFile.fetchFileData(destinationFile, null, new DownloadListener<String>() {
-                        @Override
-                        public void onStart() {
-                            showToast("Started downloading :)");
-                        }
-                        @Override
-                        public void onRateUpdate(long l, long l1, long l2) {
-                        }
-                        @Override
-                        public void onRealtimeDataUpdate(byte[] bytes, long l, boolean b) {
-                        }
-                        @Override
-                        public void onProgress(long l, long l1) {
-                        }
-                        @Override
-                        public void onSuccess(String s) {
-                            showToast("Download successful");
-                        }
-                        @Override
-                        public void onFailure(DJIError djiError) {
-                            showToast("Download failed: " + djiError.getDescription());
-                        }
-                    });
-                      }
-            }
-            else {
-                showToast("Download failed:1 ");
-            }
-        }
-        else {
-            showToast("Download failed: 2");
-        }
     }
 
     public void WaypointsList() {
@@ -340,8 +407,13 @@ public class ILMButtons {
         ilmWaypoints.updateCSVInfo();
     }
 
-    public void RepeatRoute() {
-
+    public void RepeatRoute(ILMWaypoints ilmWaypoints) {
+        HashMap<String, String> waypoints = ilmWaypoints.getWaypoints();
+        if (waypoints != null && !waypoints.isEmpty()) {
+                goTo(ilmWaypoints);
+        } else {
+            Toast.makeText(context, "No route to repeat", Toast.LENGTH_SHORT).show();
+        }
     }
 }
 

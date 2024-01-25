@@ -35,7 +35,10 @@ public class ILMCSVLog {
     private void createCSVFile() {
         String currDate = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(new Date());
         String filename = "ILM_DJI_Drone_Data -" + currDate + ".csv";
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+        File path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Logs");
+        if (!path.exists()) {
+            path.mkdirs(); // Create the directory if it doesn't exist
+        }
         File file = new File(path, filename);
         boolean isFileExists = file.exists();
         try {
