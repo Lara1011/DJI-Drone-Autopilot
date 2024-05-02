@@ -2,6 +2,8 @@ package com.dji.sdk.sample.demo.ILM;
 
 import static com.dji.sdk.sample.internal.utils.ToastUtils.showToast;
 
+import static dji.midware.data.manager.P3.ServiceManager.getContext;
+
 import android.content.Context;
 import android.os.Environment;
 import android.os.Handler;
@@ -17,8 +19,11 @@ import androidx.annotation.Nullable;
 
 import com.dji.sdk.sample.R;
 
+import com.dji.sdk.sample.demo.flightcontroller.VirtualStickView;
 import com.dji.sdk.sample.internal.controller.DJISampleApplication;
+import com.dji.sdk.sample.internal.utils.DialogUtils;
 import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
+import com.dji.sdk.sample.internal.utils.OnScreenJoystick;
 import com.dji.sdk.sample.internal.utils.ToastUtils;
 
 import java.io.File;
@@ -26,10 +31,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.virtualstick.FlightControlData;
+import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
+import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
 import dji.common.flightcontroller.virtualstick.VerticalControlMode;
+import dji.common.flightcontroller.virtualstick.YawControlMode;
+import dji.common.gimbal.Rotation;
+import dji.common.gimbal.RotationMode;
 import dji.common.mission.waypoint.Waypoint;
 import dji.common.mission.waypoint.WaypointAction;
 import dji.common.mission.waypoint.WaypointActionType;
@@ -45,6 +57,7 @@ import dji.common.mission.waypoint.WaypointTurnMode;
 import dji.common.util.CommonCallbacks;
 import dji.sdk.camera.Camera;
 import dji.sdk.flightcontroller.FlightController;
+import dji.sdk.gimbal.Gimbal;
 import dji.sdk.media.DownloadListener;
 import dji.sdk.media.MediaFile;
 import dji.sdk.media.MediaManager;
@@ -63,22 +76,27 @@ public class ILMButtons {
     protected Button Waypointbtn;
     protected Button AddWaypointbtn;
     protected Button RepeatRoutebtn;
+    protected Button CameraControlbtn;
+    protected Button CameraYawUp;
+    protected Button CameraYawDown;
+    protected Button CameraRollUp;
+    protected Button CameraRollDown;
+    protected Button CameraPitchUp;
+    protected Button CameraPitchDown;
     private final Context context;
     public boolean isRecording = false;
     private boolean isRoute = false;
     private RelativeLayout waypointButtonsLayout;
-    private WaypointMission.Builder builder;
-    String latitude = "32";
-    String longitude = "35";
-    String altitude = "0";
-    String pitch = "0";
-
-    private WaypointMissionOperator waypointMissionOperator = null;
-    private WaypointMission mission = null;
-    private WaypointMissionOperatorListener listener;
-    private final static int WAYPOINT_COUNT = 4;
-
-    FlightController flightController = ModuleVerificationUtil.getFlightController();
+    private Timer sendVirtualStickDataTimer;
+    private float pitch;
+    private float roll;
+    private float yaw;
+    private float throttle;
+    private FlightController flightController = null;
+    private float waypoint_alt = 0;
+    private int pitch_adjust = 0;
+    private int yaw_adjust = 0;
+    private int roll_adjust = 0;
 
 
     public ILMButtons(Context context, View view) {
@@ -90,8 +108,20 @@ public class ILMButtons {
         Waypointbtn = view.findViewById(R.id.btn_ILM_Waypoint);
         AddWaypointbtn = view.findViewById(R.id.btn_ILM_Add_Waypoint);
         RepeatRoutebtn = view.findViewById(R.id.btn_ILM_Repeat_Route);
+        CameraControlbtn = view.findViewById(R.id.btn_ILM_camera_controls);
+        CameraYawUp =  view.findViewById(R.id.btn_ILM_camera_yaw_up);
+        CameraYawDown = view.findViewById(R.id.btn_ILM_camera_yaw_down);
+        CameraRollUp = view.findViewById(R.id.btn_ILM_camera_roll_up);
+        CameraRollDown = view.findViewById(R.id.btn_ILM_camera_roll_down);
+        CameraPitchUp = view.findViewById(R.id.btn_ILM_camera_pitch_up);
+        CameraPitchDown = view.findViewById(R.id.btn_ILM_camera_pitch_down);
 
         waypointButtonsLayout = (RelativeLayout) view.findViewById(R.id.waypointButtonsLayout);
+        if(flightController == null){
+            if(ModuleVerificationUtil.isFlightControllerAvailable()){
+                flightController = DJISampleApplication.getAircraftInstance().getFlightController();
+            }
+        }
 
         this.context = context;
     }
@@ -142,26 +172,18 @@ public class ILMButtons {
                 }
             }
         });
+//        flightController.sendVirtualStickFlightControlData(new FlightControlData(0, 0, yaw, waypoint_alt), // Only adjust yaw to rotate
+//                new CommonCallbacks.CompletionCallback() {
+//                    @Override
+//                    public void onResult(DJIError djiError) {
+//                        if (djiError != null) {
+//                            Log.e("TAG", "Rotation failed: " + djiError.getDescription());
+//                        } else {
+//                            Log.d("TAG", "Rotation successful");
+//                        }
+//                    }
+//                });
 
-//        if(waypointMissionOperator != null){
-//            waypointMissionOperator.stopMission(new CommonCallbacks.CompletionCallback() {
-//                @Override
-//                public void onResult(DJIError djiError) {
-//                    ToastUtils.setResultToToast(djiError != null ? "" : djiError.getDescription());
-//                }
-//            });
-//        }
-//        flightController.getFlightAssistant().setLandingProtectionEnabled(true, new CommonCallbacks.CompletionCallback() {
-//            @Override
-//            public void onResult(DJIError djiError) {
-//                if (djiError == null) {
-//                    showToast(context.getResources().getString(R.string.success));
-//                    disable(flightController);
-//                } else {
-//                    showToast(djiError.getDescription());
-//                }
-//            }
-//        });
     }
 
 
@@ -178,147 +200,143 @@ public class ILMButtons {
         });
     }
 
-    protected void goTo(ILMWaypoints ilmWaypoints) {
-        waypointMissionOperator = MissionControl.getInstance().getWaypointMissionOperator();
-        setUpListener();
-        mission = createMission(ilmWaypoints);
-        if (mission != null) {
-            Log.i("load", "started loading mission");
-            waypointMissionOperator.getLoadedMissionBuilder();
-            Log.i("Loaded mission: " , waypointMissionOperator.getLoadedMissionBuilder().toString());
-            DJIError loadError = waypointMissionOperator.loadMission(mission);
-            Log.i("load", loadError != null ? loadError.getDescription() : "Load success");
-            if (loadError == null) {
-                uploadMission();
-            } else {
-                // Print more details about the mission for debugging
-                Log.e("Mission Details", "Mission: " + mission.toString());
+
+
+    protected synchronized void goTo(ILMWaypoints ilmWaypoints) {
+        flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    showToast("Virtual sticks enabled!");
+                } else showToast("nope" + djiError);
             }
-        } else {
-            ToastUtils.setResultToToast("Mission is null");
-        }
+        });
+        flightController.setVerticalControlMode(VerticalControlMode.POSITION);
+        flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+        flightController.setYawControlMode(YawControlMode.ANGLE);
+        flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+
+        double lat = Double.parseDouble(ilmWaypoints.getWaypoints().get("Latitude" + (ilmWaypoints.getCounter() - 1)));
+        double lon = Double.parseDouble(ilmWaypoints.getWaypoints().get("Longitude" + (ilmWaypoints.getCounter() - 1)));
+        double alt = Double.parseDouble(ilmWaypoints.getWaypoints().get("Altitude" + (ilmWaypoints.getCounter() - 1)));
+        final double[] distance = {Integer.MAX_VALUE};
+        distance[0] = ilmWaypoints.haversine(lat, lon, alt);
+        double angle = ilmWaypoints.calculateBearing(lat, lon);
+        Log.e("Distance", String.valueOf(distance[0]));
+
+        if (angle > 180)
+            yaw = (float) (-360 + angle);
+        if (angle < -180)
+            yaw = (float) (360 + angle);
+        if(angle < 180 && angle > -180)
+            yaw = (float) angle;
+        Log.e("yaw", String.valueOf(angle));
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            int executionCount = 0;
+
+            @Override
+            public void run() {
+                if (executionCount < 6) {
+                    flightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(0, 0, yaw, (float) alt), // Only adjust yaw to rotate
+                            new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        Log.e("TAG", "Rotation failed: " + djiError.getDescription());
+                                    } else {
+                                        Log.d("TAG", "Rotation successful");
+                                    }
+                                }
+                            });
+
+                    double angle = ilmWaypoints.calculateBearing(lat, lon);
+
+                    if (angle > 180)
+                        yaw = (float) (-360 + angle);
+                    if (angle < -180)
+                        yaw = (float) (360 + angle);
+                    if(angle < 180 && angle > -180)
+                        yaw = (float) angle;
+
+                    Log.e("yaw", String.valueOf(yaw));
+                    Log.e("angle", String.valueOf(angle));
+
+                    executionCount++;
+                } else {
+                    // Cancel the timer after executing the task 5 times
+                    timer.cancel();
+                }
+            }
+        }, 0, 150);
+
+
+        pitch = (float) (Math.sin(Math.toRadians(yaw)) * 2); // Adjust speed as needed
+        roll = (float) (Math.cos(Math.toRadians(yaw)) * 2);
+        double currentAltitude = flightController.getState().getAircraftLocation().getAltitude();
+        throttle = (float) ((alt - currentAltitude) * 0.2); // Adjust altitude
+
+        Timer forward_timer = new Timer();
+        final double[] finalDistance = {distance[0]};
+        forward_timer.schedule(new TimerTask() {
+            int executionCount = 0;
+
+            @Override
+            public void run() {
+                if (finalDistance[0] > 0.001) {
+                    flightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(0, 2, yaw, (float) alt),
+                            new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        Log.e("TAG", "Forward failed: " + djiError.getDescription());
+                                    } else {
+                                        Log.d("TAG", "Forward successful");
+                                    }
+                                }
+                            });
+                } else {
+                    // Cancel the timer after executing the task 5 times
+                    forward_timer.cancel();
+                }
+                finalDistance[0] = ilmWaypoints.haversine(lat, lon, alt);
+                Log.e("Distance", String.valueOf(finalDistance[0]));
+            }
+        }, 1000, 250);
+
+        flightController.setVirtualStickModeEnabled(false, null);
     }
 
-    private void uploadMission() {
-        if (WaypointMissionState.READY_TO_RETRY_UPLOAD.equals(waypointMissionOperator.getCurrentState())
-                || WaypointMissionState.READY_TO_UPLOAD.equals(waypointMissionOperator.getCurrentState())) {
-            waypointMissionOperator.uploadMission(new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError uploadError) {
-                    ToastUtils.setResultToToast(uploadError != null ? uploadError.getDescription() : "upload success");
-
-                    if (uploadError == null) {
-                        // Mission uploaded successfully, proceed to start
-                        startWaypointMission();
+    private synchronized void sendFlightControlCommand(){
+        flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    showToast("Virtual sticks enabled!");
+                } else showToast("nope" + djiError);
+            }
+        });
+        if (flightController.isVirtualStickControlModeAvailable()) {
+            //flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+            if (flightController != null) {
+                flightController.sendVirtualStickFlightControlData(new FlightControlData(pitch, roll, yaw, throttle), new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        if (djiError != null) {
+                            Log.d("TAG", "Flight control command sent failed");
+                        } else {
+                            Log.d("TAG", "Flight control command sent successfully");
+                        }
                     }
-                }
-            });
-        } else {
-            ToastUtils.setResultToToast("Wait for mission to be loaded");
-        }
-    }
-
-    private void startWaypointMission() {
-        if (waypointMissionOperator != null && mission != null) {
-            waypointMissionOperator.startMission(new CommonCallbacks.CompletionCallback() {
-                @Override
-                public void onResult(DJIError djiError) {
-                    ToastUtils.setResultToToast(djiError != null ? djiError.getDescription() : "Start success");
-                }
-            });
-        } else {
-            ToastUtils.setResultToToast("Mission or mission operator is null");
-        }
-    }
-
-    private void setUpListener() {
-        // Example of Listener
-        listener = new WaypointMissionOperatorListener() {
-            @Override
-            public void onDownloadUpdate(@NonNull WaypointMissionDownloadEvent waypointMissionDownloadEvent) {
-                // Example of Download Listener
-                if (waypointMissionDownloadEvent.getProgress() != null
-                        && waypointMissionDownloadEvent.getProgress().isSummaryDownloaded
-                        && waypointMissionDownloadEvent.getProgress().downloadedWaypointIndex == (WAYPOINT_COUNT - 1)) {
-                    ToastUtils.setResultToToast("Mission is downloaded successfully");
-                }
-            }
-
-            @Override
-            public void onUploadUpdate(@NonNull WaypointMissionUploadEvent waypointMissionUploadEvent) {
-                // Example of Upload Listener
-                if (waypointMissionUploadEvent.getProgress() != null
-                        && waypointMissionUploadEvent.getProgress().isSummaryUploaded
-                        && waypointMissionUploadEvent.getProgress().uploadedWaypointIndex == (WAYPOINT_COUNT - 1)) {
-                    ToastUtils.setResultToToast("Mission is uploaded successfully");
-                }
-            }
-
-            @Override
-            public void onExecutionUpdate(@NonNull WaypointMissionExecutionEvent waypointMissionExecutionEvent) {
-            }
-
-            @Override
-            public void onExecutionStart() {
-                ToastUtils.setResultToToast("Mission started");
-            }
-
-            @Override
-            public void onExecutionFinish(@Nullable DJIError djiError) {
-            }
-        };
-
-        if (waypointMissionOperator != null) {
-            waypointMissionOperator.addListener(listener);
-        }
-    }
-
-
-    private WaypointMission createMission(ILMWaypoints ilmWaypoints){
-        builder = new WaypointMission.Builder();
-        builder.maxFlightSpeed(15)  // Set maximum flight speed
-                .autoFlightSpeed(8)  // Set automatic flight speed
-                .flightPathMode(WaypointMissionFlightPathMode.NORMAL)
-                .finishedAction(WaypointMissionFinishedAction.NO_ACTION)
-                .headingMode(WaypointMissionHeadingMode.AUTO);
-        HashMap<String, String> waypoints = ilmWaypoints.getWaypoints();
-        if (isRoute) {
-            for (int i = 0; i < waypoints.size(); i++) {
-                latitude = waypoints.get("Latitude" + i);
-                longitude = waypoints.get("Longitude" + i);
-                altitude = waypoints.get("Altitude" + i);
-                pitch = waypoints.get("Pitch" + i);
-
-                Waypoint waypoint = new Waypoint(Double.parseDouble(latitude), Double.parseDouble(longitude), Float.parseFloat(altitude));
-                waypoint.turnMode = WaypointTurnMode.CLOCKWISE;
-                waypoint.addAction(new WaypointAction(WaypointActionType.ROTATE_AIRCRAFT, Integer.parseInt(pitch)));
-                builder.addWaypoint(waypoint);
-            }
-            isRoute = false;
-            return builder.build();
-        } else {
-            int size = waypoints.size();
-            if (size > 0) {
-                latitude = waypoints.get("Latitude" + (size/4 - 1));
-                longitude = waypoints.get("Longitude" + (size/4 - 1));
-                altitude = waypoints.get("Altitude" + (size/4 - 1));
-                pitch = waypoints.get("Pitch" + (size/4 - 1));
-//                waypoints.remove("Latitude" + (size/4 - 1));
-//                waypoints.remove("Longitude" + (size/4 - 1));
-//                waypoints.remove("Altitude" + (size/4 - 1));
-//                waypoints.remove("Pitch" + (size/4 - 1));
+                });
             }
         }
-
-        Waypoint waypoint = new Waypoint(Double.parseDouble(latitude), Double.parseDouble(longitude), Float.parseFloat(altitude));
-        waypoint.turnMode = WaypointTurnMode.CLOCKWISE;
-        waypoint.addAction(new WaypointAction(WaypointActionType.ROTATE_AIRCRAFT, Integer.parseInt(pitch)));
-        builder.addWaypoint(new Waypoint(32.1012839, 35.2020039, Float.parseFloat(altitude)));
-        builder.addWaypoint(waypoint);
-
-        Log.i("builder waypoints: " , builder.getWaypointList().toString());
-
-        return builder.build();
+        else {
+            showToast("Virtual sticks not available!");
+        }
     }
 
     private void stopOnPlace() {
@@ -413,6 +431,77 @@ public class ILMButtons {
                 goTo(ilmWaypoints);
         } else {
             Toast.makeText(context, "No route to repeat", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void cameraControl(String str, char symbol){
+        Gimbal gimbal = DJISDKManager.getInstance().getProduct().getGimbal();
+        if (gimbal != null) {
+            switch (str){
+                case "yaw":
+                    if(symbol == '+'){
+                        yaw_adjust += 1;
+                    }else if(symbol == '-'){
+                        yaw_adjust -= 1;
+                    }
+                    gimbal.rotate(new Rotation.Builder().yaw(yaw_adjust)
+                            .mode(RotationMode.ABSOLUTE_ANGLE)
+                            .build(), new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            if (djiError == null) {
+                                // Rotation successful
+                                Log.d("Gimbal", "Yaw rotation successful");
+                            } else {
+                                // Handle error
+                                Log.e("Gimbal", "Yaw rotation failed: " + djiError.getDescription());
+                            }
+                        }
+                    });
+                    break;
+                case "roll":
+                    if(symbol == '+'){
+                        roll_adjust += 1;
+                    }else if(symbol == '-'){
+                        roll_adjust -= 1;
+                    }
+                    gimbal.rotate(new Rotation.Builder().roll(roll_adjust)
+                            .mode(RotationMode.ABSOLUTE_ANGLE)
+                            .build(), new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            if (djiError == null) {
+                                // Rotation successful
+                                Log.d("Gimbal", "Roll rotation successful");
+                            } else {
+                                // Handle error
+                                Log.e("Gimbal", "Roll rotation failed: " + djiError.getDescription());
+                            }
+                        }
+                    });
+                    break;
+                case "pitch":
+                    if(symbol == '+'){
+                        pitch_adjust += 1;
+                    }else if(symbol == '-'){
+                        pitch_adjust -= 1;
+                    }
+                    gimbal.rotate(new Rotation.Builder().pitch(pitch_adjust)
+                            .mode(RotationMode.ABSOLUTE_ANGLE)
+                            .build(), new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            if (djiError == null) {
+                                // Rotation successful
+                                Log.d("Gimbal", "Pitch rotation successful");
+                            } else {
+                                // Handle error
+                                Log.e("Gimbal", "Pitch rotation failed: " + djiError.getDescription());
+                            }
+                        }
+                    });
+                    break;
+            }
         }
     }
 }
