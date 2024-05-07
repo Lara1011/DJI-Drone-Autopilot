@@ -4,10 +4,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -18,6 +21,10 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 
 import java.util.ArrayList;
+import java.util.Locale;
+
+import dji.common.flightcontroller.LocationCoordinate3D;
+import dji.sdk.flightcontroller.FlightController;
 
 public class ILMMapController {
     private MapView mapView;
@@ -46,15 +53,50 @@ public class ILMMapController {
         compassOverlay.enableCompass();
         mapView.getOverlays().add(compassOverlay);
 
-        GeoPoint point = new GeoPoint(32.10302253616168,35.20963146438375,678.5224969069494);
-
-        Marker startMarker = new Marker(mapView);
-        startMarker.setPosition(point);
-        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-        mapView.getOverlays().add(startMarker);
-
-        mapView.getController().setCenter(point);
+        double[] points = new double[3];
+        updatePinMark(points);
     }
+
+    private void updatePinMark(double[] points) {
+        Handler locationUpdateHandler = new Handler();
+        FlightController flightController = ModuleVerificationUtil.getFlightController();
+        final Marker[] previousMarker = {null}; // Define previousMarker here
+
+        Runnable updateTimeRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (flightController != null) {
+                    LocationCoordinate3D aircraftLocation = flightController.getState().getAircraftLocation();
+                    if (aircraftLocation != null) {
+                        points[0] = aircraftLocation.getLatitude();
+                        points[1] = aircraftLocation.getLongitude();
+                        points[2] = aircraftLocation.getAltitude();
+                        GeoPoint point = new GeoPoint(points[0], points[1], points[2]);
+
+                        // Remove the previous marker if it exists
+                        if (previousMarker[0] != null) {
+                            mapView.getOverlays().remove(previousMarker[0]);
+                        }
+
+                        // Add a new marker
+                        Marker startMarker = new Marker(mapView);
+                        startMarker.setPosition(point);
+                        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                        mapView.getOverlays().add(startMarker);
+
+                        // Set the current marker as the previous marker
+                        previousMarker[0] = startMarker;
+
+                        mapView.getController().setCenter(point);
+                    }
+                }
+                locationUpdateHandler.postDelayed(this, 1000);
+            }
+        };
+        updateTimeRunnable.run();
+    }
+
+
     private void requestPermissionsIfNecessary(String[] permissions) {
         ArrayList<String> permissionsToRequest = new ArrayList<>();
         for (String permission : permissions) {
