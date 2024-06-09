@@ -11,6 +11,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -40,6 +41,16 @@ public class ILMRemoteControllerView extends RelativeLayout
     private Button Waypointbtn;
     private Button AddWaypointbtn;
     private Button RepeatRoutebtn;
+    private Button ChangeWaypointbtn;
+    private Button CameraControlbtn;
+    private Button CameraYawUp;
+    private Button CameraYawDown;
+    private Button CameraRollUp;
+    private Button CameraRollDown;
+    private Button CameraPitchUp;
+    private Button CameraPitchDown;
+    private Button LoadCSV;
+    private Button RemoveWaypoint;
     private MapView mapView = null;
     private TextView Battery;
     private TextView x;
@@ -64,6 +75,8 @@ public class ILMRemoteControllerView extends RelativeLayout
     private ILMWaypoints ilmWaypoints;
     private ILMButtons buttons;
     private RelativeLayout waypointButtonsLayout;
+    private LinearLayout cameraControlsLayout;
+    private ILMUploadWaypoints uploadWaypoints;
 
     public ILMRemoteControllerView(Context context) {
         super(context);
@@ -91,6 +104,18 @@ public class ILMRemoteControllerView extends RelativeLayout
         Waypointbtn = (Button) findViewById(R.id.btn_ILM_Waypoint);
         AddWaypointbtn = (Button) findViewById(R.id.btn_ILM_Add_Waypoint);
         RepeatRoutebtn = (Button) findViewById(R.id.btn_ILM_Repeat_Route);
+        ChangeWaypointbtn = (Button) findViewById(R.id.btn_ILM_Change_Waypoint);
+        RemoveWaypoint = (Button) findViewById(R.id.btn_ILM_Remove_Waypoint);
+
+        CameraControlbtn = (Button) findViewById(R.id.btn_ILM_camera_controls);
+        CameraYawUp = (Button) findViewById(R.id.btn_ILM_camera_yaw_up);
+        CameraYawDown = (Button) findViewById(R.id.btn_ILM_camera_yaw_down);
+        CameraRollUp = (Button) findViewById(R.id.btn_ILM_camera_roll_up);
+        CameraRollDown = (Button) findViewById(R.id.btn_ILM_camera_roll_down);
+        CameraPitchUp = (Button) findViewById(R.id.btn_ILM_camera_pitch_up);
+        CameraPitchDown = (Button) findViewById(R.id.btn_ILM_camera_pitch_down);
+
+        LoadCSV = (Button) findViewById(R.id.btn_ILM_LoadCSV);
 
 
         x = (TextView) findViewById(R.id.textView_ILM_XInt);
@@ -115,6 +140,7 @@ public class ILMRemoteControllerView extends RelativeLayout
         view = (View) findViewById(R.id.view_ILM_coverView);
 
         waypointButtonsLayout = (RelativeLayout) findViewById(R.id.waypointButtonsLayout);
+        cameraControlsLayout = (LinearLayout) findViewById(R.id.cameraControlsLayout);
 
         infoUpdate = new ILMInfoUpdate(Battery,x,y,z,latitude, longitude,altitude,DateTime,Speed,Distance,Pitch,Roll,Yaw);
         infoUpdate.updateDateTime();
@@ -132,6 +158,19 @@ public class ILMRemoteControllerView extends RelativeLayout
         buttons.Waypointbtn.setOnClickListener(this);
         buttons.AddWaypointbtn.setOnClickListener(this);
         buttons.RepeatRoutebtn.setOnClickListener(this);
+        buttons.ChangeWaypointbtn.setOnClickListener(this);
+        buttons.RemoveWaypoint.setOnClickListener(this);
+        buttons.CameraControlbtn.setOnClickListener(this);
+        buttons.CameraYawUp.setOnClickListener(this);
+        buttons.CameraYawDown.setOnClickListener(this);
+        buttons.CameraRollUp.setOnClickListener(this);
+        buttons.CameraRollDown.setOnClickListener(this);
+        buttons.CameraPitchUp.setOnClickListener(this);
+        buttons.CameraPitchDown.setOnClickListener(this);
+        buttons.LoadCSV.setOnClickListener(this);
+
+        uploadWaypoints = new ILMUploadWaypoints(getContext());
+
         videoFeedView.setCoverView(view);
     }
 
@@ -158,10 +197,45 @@ public class ILMRemoteControllerView extends RelativeLayout
                 buttons.WaypointsList();
                 break;
             case R.id.btn_ILM_Add_Waypoint:
-                buttons.AddWaypoint(ilmWaypoints);
+                buttons.AddWaypoint(ilmWaypoints, mapController);
+                //mapController.addWaypoint();
                 break;
             case R.id.btn_ILM_Repeat_Route:
                 buttons.RepeatRoute(ilmWaypoints);
+                break;
+            case R.id.btn_ILM_Change_Waypoint:
+                buttons.ChangeWaypoint(ilmWaypoints);
+                break;
+            case R.id.btn_ILM_camera_controls:
+                if (cameraControlsLayout.getVisibility() == View.VISIBLE) {
+                    cameraControlsLayout.setVisibility(View.GONE);
+                } else {
+                    cameraControlsLayout.setVisibility(View.VISIBLE);
+                }
+                break;
+            case R.id.btn_ILM_camera_yaw_up:
+                buttons.cameraControl("yaw",'+');
+                break;
+            case R.id.btn_ILM_camera_yaw_down:
+                buttons.cameraControl("yaw",'-');
+                break;
+            case R.id.btn_ILM_camera_roll_up:
+                buttons.cameraControl("roll",'+');
+                break;
+            case R.id.btn_ILM_camera_roll_down:
+                buttons.cameraControl("roll",'-');
+                break;
+            case R.id.btn_ILM_camera_pitch_up:
+                buttons.cameraControl("pitch",'+');
+                break;
+            case R.id.btn_ILM_camera_pitch_down:
+                buttons.cameraControl("pitch",'-');
+                break;
+            case R.id.btn_ILM_LoadCSV:
+                buttons.uploadRoute(ilmWaypoints, uploadWaypoints, mapController);
+                break;
+            case R.id.btn_ILM_Remove_Waypoint:
+                buttons.removeWaypoint(ilmWaypoints, mapController);
                 break;
         }
     }
@@ -239,6 +313,7 @@ public class ILMRemoteControllerView extends RelativeLayout
         DJISampleApplication.getEventBus().post(new MainActivity.RequestEndFullScreenEvent());
         ilmLog.closeLogBrain();
         ilmWaypoints.closeLogBrain();
+        mapController.stopLocationUpdates();
         super.onDetachedFromWindow();
     }
 }

@@ -35,6 +35,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import dji.common.error.DJIError;
+import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.common.flightcontroller.virtualstick.FlightControlData;
 import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
 import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
@@ -76,6 +77,7 @@ public class ILMButtons {
     protected Button Waypointbtn;
     protected Button AddWaypointbtn;
     protected Button RepeatRoutebtn;
+    protected Button ChangeWaypointbtn;
     protected Button CameraControlbtn;
     protected Button CameraYawUp;
     protected Button CameraYawDown;
@@ -83,6 +85,8 @@ public class ILMButtons {
     protected Button CameraRollDown;
     protected Button CameraPitchUp;
     protected Button CameraPitchDown;
+    protected Button LoadCSV;
+    protected Button RemoveWaypoint;
     private final Context context;
     public boolean isRecording = false;
     private boolean isRoute = false;
@@ -100,6 +104,9 @@ public class ILMButtons {
     private int counter = 0;
     private int copy_counter = 0;
     private boolean isGoTo= true;
+    private ILMCamera camera = new ILMCamera();
+    private ILMGoTo goTo;
+    private int count = 0;
 
 
     public ILMButtons(Context context, View view) {
@@ -111,6 +118,8 @@ public class ILMButtons {
         Waypointbtn = view.findViewById(R.id.btn_ILM_Waypoint);
         AddWaypointbtn = view.findViewById(R.id.btn_ILM_Add_Waypoint);
         RepeatRoutebtn = view.findViewById(R.id.btn_ILM_Repeat_Route);
+        ChangeWaypointbtn = view.findViewById(R.id.btn_ILM_Change_Waypoint);
+        RemoveWaypoint = view.findViewById(R.id.btn_ILM_Remove_Waypoint);
         CameraControlbtn = view.findViewById(R.id.btn_ILM_camera_controls);
         CameraYawUp =  view.findViewById(R.id.btn_ILM_camera_yaw_up);
         CameraYawDown = view.findViewById(R.id.btn_ILM_camera_yaw_down);
@@ -118,6 +127,7 @@ public class ILMButtons {
         CameraRollDown = view.findViewById(R.id.btn_ILM_camera_roll_down);
         CameraPitchUp = view.findViewById(R.id.btn_ILM_camera_pitch_up);
         CameraPitchDown = view.findViewById(R.id.btn_ILM_camera_pitch_down);
+        LoadCSV = view.findViewById(R.id.btn_ILM_LoadCSV);
 
         waypointButtonsLayout = (RelativeLayout) view.findViewById(R.id.waypointButtonsLayout);
         if(flightController == null){
@@ -176,6 +186,8 @@ public class ILMButtons {
             }
         });
         isGoTo = false;
+        goTo.isGoTo = false;
+        flightController.setVirtualStickModeEnabled(false, null);
 //        flightController.sendVirtualStickFlightControlData(new FlightControlData(0, 0, yaw, waypoint_alt), // Only adjust yaw to rotate
 //                new CommonCallbacks.CompletionCallback() {
 //                    @Override
@@ -205,115 +217,135 @@ public class ILMButtons {
 
 
     protected synchronized void goTo(ILMWaypoints ilmWaypoints) {
-        if (counter == 0 || copy_counter == 0) {
+        if (ilmWaypoints.getWaypoints().isEmpty()) {
             showToast("Please add waypoints first");
             return;
         }
-
-        flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
-            @Override
-            public void onResult(DJIError djiError) {
-                if (djiError == null) {
-                    showToast("Virtual sticks enabled!");
-                } else showToast("nope" + djiError);
-            }
-        });
-        flightController.setVerticalControlMode(VerticalControlMode.POSITION);
-        flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
-        flightController.setYawControlMode(YawControlMode.ANGLE);
-        flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
-
-        double lat = Double.parseDouble(ilmWaypoints.getWaypoints().get("Latitude" + (copy_counter - 1)));
-        double lon = Double.parseDouble(ilmWaypoints.getWaypoints().get("Longitude" + (copy_counter - 1)));
-        double alt = Double.parseDouble(ilmWaypoints.getWaypoints().get("Altitude" + (copy_counter - 1)));
-        copy_counter--;
-        final double[] distance = {Integer.MAX_VALUE};
-        distance[0] = ilmWaypoints.haversine(lat, lon, alt);
-        double angle = ilmWaypoints.calculateBearing(lat, lon);
-        Log.e("Distance", String.valueOf(distance[0]));
-
-        if (angle > 180)
-            yaw = (float) (-360 + angle);
-        if (angle < -180)
-            yaw = (float) (360 + angle);
-        if(angle < 180 && angle > -180)
-            yaw = (float) angle;
-        Log.e("yaw", String.valueOf(angle));
-
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            int executionCount = 0;
-            @Override
-            public void run() {
-                if (executionCount < 6 && isGoTo) {
-                    flightController.sendVirtualStickFlightControlData(
-                            new FlightControlData(0, 0, yaw, (float) alt), // Only adjust yaw to rotate
-                            new CommonCallbacks.CompletionCallback() {
-                                @Override
-                                public void onResult(DJIError djiError) {
-                                    if (djiError != null) {
-                                        Log.e("TAG", "Rotation failed: " + djiError.getDescription());
-                                    } else {
-                                        Log.d("TAG", "Rotation successful");
-                                    }
-                                }
-                            });
-
-                    double angle = ilmWaypoints.calculateBearing(lat, lon);
-
-                    if (angle > 180)
-                        yaw = (float) (-360 + angle);
-                    if (angle < -180)
-                        yaw = (float) (360 + angle);
-                    if(angle < 180 && angle > -180)
-                        yaw = (float) angle;
-
-                    Log.e("yaw", String.valueOf(yaw));
-                    Log.e("angle", String.valueOf(angle));
-
-                    executionCount++;
-                } else {
-                    // Cancel the timer after executing the task 5 times
-                    timer.cancel();
-                }
-            }
-        }, 0, 150);
-
-        pitch = (float) (Math.sin(Math.toRadians(yaw)) * 2); // Adjust speed as needed
-        roll = (float) (Math.cos(Math.toRadians(yaw)) * 2);
-        double currentAltitude = flightController.getState().getAircraftLocation().getAltitude();
-        throttle = (float) ((alt - currentAltitude) * 0.2); // Adjust altitude
-
-        Timer forward_timer = new Timer();
-        final double[] finalDistance = {distance[0]};
-        forward_timer.schedule(new TimerTask() {
-            int executionCount = 0;
-
-            @Override
-            public void run() {
-                if (finalDistance[0] > 0.001 && isGoTo) {
-                    flightController.sendVirtualStickFlightControlData(
-                            new FlightControlData(0, 2, yaw, (float) alt),
-                            new CommonCallbacks.CompletionCallback() {
-                                @Override
-                                public void onResult(DJIError djiError) {
-                                    if (djiError != null) {
-                                        Log.e("TAG", "Forward failed: " + djiError.getDescription());
-                                    } else {
-                                        Log.d("TAG", "Forward successful");
-                                    }
-                                }
-                            });
-                } else {
-                    // Cancel the timer after executing the task 5 times
-                    forward_timer.cancel();
-                    flightController.setVirtualStickModeEnabled(false, null);
-                    isGoTo = true;
-                }
-                finalDistance[0] = ilmWaypoints.haversine(lat, lon, alt);
-                Log.e("Distance", String.valueOf(finalDistance[0]));
-            }
-        }, 1500, 250);
+        if (goTo == null) {
+            goTo = new ILMGoTo(ilmWaypoints);
+            goTo.setMode(1);
+        }
+        double lat = Double.parseDouble(ilmWaypoints.getWaypoints().get("Latitude" + count));
+        double lon = Double.parseDouble(ilmWaypoints.getWaypoints().get("Longitude" + count));
+        double alt = Double.parseDouble( ilmWaypoints.getWaypoints().get("Altitude" + count));
+        Log.e("Altitude", String.valueOf(alt));
+        Log.e("Latitude", String.valueOf(lat));
+        Log.e("Longitude", String.valueOf(lon));
+        goTo.setWaypoint(lat, lon, alt);
+        goTo.goTo();
+//
+//        flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+//            @Override
+//            public void onResult(DJIError djiError) {
+//                if (djiError == null) {
+//                    showToast("Virtual sticks enabled!");
+//                } else showToast("nope" + djiError);
+//            }
+//        });
+//        flightController.setVerticalControlMode(VerticalControlMode.POSITION);
+//        flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+//        flightController.setYawControlMode(YawControlMode.ANGLE);
+//        flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+//
+//        double lat = Double.parseDouble(ilmWaypoints.getWaypoints().get("Latitude" + (copy_counter - 1)));
+//        double lon = Double.parseDouble(ilmWaypoints.getWaypoints().get("Longitude" + (copy_counter - 1)));
+//        double alt = Double.parseDouble(ilmWaypoints.getWaypoints().get("Altitude" + (copy_counter - 1)));
+//        copy_counter--;
+//        final double[] distance = {Integer.MAX_VALUE};
+//        distance[0] = ilmWaypoints.haversine(lat, lon, alt);
+//        double angle = ilmWaypoints.calculateBearing(lat, lon);
+//        Log.e("Distance", String.valueOf(distance[0]));
+//
+//        if (angle > 180)
+//            yaw = (float) (-360 + angle);
+//        if (angle < -180)
+//            yaw = (float) (360 + angle);
+//        if(angle < 180 && angle > -180)
+//            yaw = (float) angle;
+//        Log.e("yaw", String.valueOf(angle));
+//
+////        Timer timer = new Timer();
+////        timer.schedule(new TimerTask() {
+////            int executionCount = 0;
+////            @Override
+////            public void run() {
+////                if (executionCount < 6 && isGoTo) {
+////                    flightController.sendVirtualStickFlightControlData(
+////                            new FlightControlData(0, 0, yaw, (float) alt), // Only adjust yaw to rotate
+////                            new CommonCallbacks.CompletionCallback() {
+////                                @Override
+////                                public void onResult(DJIError djiError) {
+////                                    if (djiError != null) {
+////                                        Log.e("TAG", "Rotation failed: " + djiError.getDescription());
+////                                    } else {
+////                                        Log.d("TAG", "Rotation successful");
+////                                    }
+////                                }
+////                            });
+////
+////                    double angle = ilmWaypoints.calculateBearing(lat, lon);
+////
+////                    if (angle > 180)
+////                        yaw = (float) (-360 + angle);
+////                    if (angle < -180)
+////                        yaw = (float) (360 + angle);
+////                    if(angle < 180 && angle > -180)
+////                        yaw = (float) angle;
+////
+////                    Log.e("yaw", String.valueOf(yaw));
+////                    Log.e("angle", String.valueOf(angle));
+////
+////                    executionCount++;
+////                } else {
+////                    // Cancel the timer after executing the task 5 times
+////                    timer.cancel();
+////                }
+////            }
+////        }, 0, 150);
+//
+//        pitch = (float) (Math.sin(Math.toRadians(yaw)) * 2); // Adjust speed as needed
+//        roll = (float) (Math.cos(Math.toRadians(yaw)) * 2);
+//        double currentAltitude = flightController.getState().getAircraftLocation().getAltitude();
+//        throttle = (float) ((alt - currentAltitude) * 0.2); // Adjust altitude
+//
+//        Timer forward_timer = new Timer();
+//        final double[] finalDistance = {distance[0]};
+//        forward_timer.schedule(new TimerTask() {
+//            int executionCount = 0;
+//
+//            @Override
+//            public void run() {
+//                if (finalDistance[0] > 0.001 && isGoTo) {
+//                    flightController.sendVirtualStickFlightControlData(
+//                            new FlightControlData(0, 2, yaw, (float) alt),
+//                            new CommonCallbacks.CompletionCallback() {
+//                                @Override
+//                                public void onResult(DJIError djiError) {
+//                                    if (djiError != null) {
+//                                        Log.e("TAG", "Forward failed: " + djiError.getDescription());
+//                                    } else {
+//                                        Log.d("TAG", "Forward successful");
+//                                    }
+//                                }
+//                            });
+//                    double angle = ilmWaypoints.calculateBearing(lat, lon);
+//
+//                    if (angle > 180)
+//                        yaw = (float) (-360 + angle);
+//                    if (angle < -180)
+//                        yaw = (float) (360 + angle);
+//                    if(angle < 180 && angle > -180)
+//                        yaw = (float) angle;
+//                } else {
+//                    // Cancel the timer after executing the task 5 times
+//                    forward_timer.cancel();
+//                    flightController.setVirtualStickModeEnabled(false, null);
+//                    isGoTo = true;
+//                }
+//                finalDistance[0] = ilmWaypoints.haversine(lat, lon, alt);
+//                Log.e("Distance", String.valueOf(finalDistance[0]));
+//            }
+//        }, 0, 250);
     }
 
     private void stopOnPlace() {
@@ -397,38 +429,84 @@ public class ILMButtons {
             waypointButtonsLayout.setVisibility(View.VISIBLE);
         }
     }
-
-    public void AddWaypoint(ILMWaypoints ilmWaypoints) {
-        ilmWaypoints.updateCSVInfo();
+///Applications/DJI Assistant 2 For Maic.app/Contents/MacOS/
+    public void AddWaypoint(ILMWaypoints ilmWaypoints, ILMMapController ilmMapController) {
+        if (goTo == null)
+            goTo = new ILMGoTo(ilmWaypoints);
+        if(count == 0) {
+            LocationCoordinate3D aircraftLocation = flightController.getState().getAircraftLocation();
+            double lat2 = 0;
+            double lon2 = 0;
+            double alt2 = 0;
+            if (aircraftLocation != null) {
+                lat2 = aircraftLocation.getLatitude();
+                lon2 = aircraftLocation.getLongitude();
+                alt2 = aircraftLocation.getAltitude();
+            }
+//            goTo.setWaypoint(lat2, lon2, alt2);
+        }
+//        count++;
+//        else {
+//            goTo.setWaypoint(32.1029090881, 35.2100601196, 6.3);
+//            count--;
+//        }
+        ilmWaypoints.updateCSVInfo(ilmMapController);
         counter++;
         copy_counter = counter;
     }
 
     public void RepeatRoute(ILMWaypoints ilmWaypoints) {
-        HashMap<String, String> waypoints = ilmWaypoints.getWaypoints();
-        if (waypoints != null && !waypoints.isEmpty()) {
-            copy_counter = ilmWaypoints.getCounter();
-            int time = 0;
-            double distance = 0;
-            for (int i = 0; i < copy_counter; i++) {
-                Timer timer = new Timer();
-                if(i != 0) {
-                    double lat = Double.parseDouble(ilmWaypoints.getWaypoints().get("Latitude" + i));
-                    double lon = Double.parseDouble(ilmWaypoints.getWaypoints().get("Longitude" + i ));
-                    double alt = Double.parseDouble(ilmWaypoints.getWaypoints().get("Altitude" + i));
-                    distance = ilmWaypoints.haversine(lat, lon, alt);
-                    time = (int)distance/20*1000 + 1000;
-                }
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        goTo(ilmWaypoints);
-                    }
-                }, time);
-            }
-        } else {
-            Toast.makeText(context, "No route to repeat", Toast.LENGTH_SHORT).show();
-        }
+        if (goTo == null)
+            goTo = new ILMGoTo(ilmWaypoints);
+        goTo.setMode(1);
+        goTo.isRepeatRoute = true;
+        goTo(ilmWaypoints);
+//        if (waypoints != null && !waypoints.isEmpty()) {
+//            copy_counter = ilmWaypoints.getCounter();
+//            int time = 0;
+//            double distance = 0;
+//            for (int i = 0; i < copy_counter; i++) {
+//                Timer timer = new Timer();
+//                if(i != 0) {
+//                    double lat = Double.parseDouble(ilmWaypoints.getWaypoints().get("Latitude" + i));
+//                    double lon = Double.parseDouble(ilmWaypoints.getWaypoints().get("Longitude" + i ));
+//                    double alt = Double.parseDouble(ilmWaypoints.getWaypoints().get("Altitude" + i));
+//                    distance = ilmWaypoints.haversine(lat, lon, alt);
+//                    time = (int)distance/20*1000 + 1000;
+//                }
+//                timer.schedule(new TimerTask() {
+//                    @Override
+//                    public void run() {
+//                        goTo(ilmWaypoints);
+//                    }
+//                }, time);
+//            }
+//        } else {
+//            Toast.makeText(context, "No route to repeat", Toast.LENGTH_SHORT).show();
+//        }
+//        if (waypoints != null && !waypoints.isEmpty()) {
+//            copy_counter = ilmWaypoints.getCounter();
+//            Timer timer = new Timer();
+//            final int[][] time = {{0}};
+//            final int[] i = {0};
+//            timer.schedule(new TimerTask() {
+//                @Override
+//                public void run() {
+//                    if (i[0] < copy_counter) {
+//                        double lat = Double.parseDouble(ilmWaypoints.getWaypoints().get("Latitude" + i));
+//                        double lon = Double.parseDouble(ilmWaypoints.getWaypoints().get("Longitude" + i));
+//                        double alt = Double.parseDouble(ilmWaypoints.getWaypoints().get("Altitude" + i));
+//                        goTo(ilmWaypoints);
+//                        i[0]++;
+//                        double distance = ilmWaypoints.haversine(lat, lon, alt);
+//                        time[0] = new int[]{(int) distance / 20 * 1000 + 1000};
+//                    }
+//                }
+//            }, 0, time[0][0]);
+//        }
+//        else {
+//            Toast.makeText(context, "No route to repeat", Toast.LENGTH_SHORT).show();
+//        }
     }
 
     public void cameraControl(String str, char symbol){
@@ -441,18 +519,7 @@ public class ILMButtons {
                     }else if(symbol == '-'){
                         yaw_adjust -= 1;
                     }
-                    gimbal.rotate(new Rotation.Builder().yaw(yaw_adjust)
-                            .mode(RotationMode.ABSOLUTE_ANGLE)
-                            .build(), new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            if (djiError == null) {
-                                Log.d("Gimbal", "Yaw rotation successful");
-                            } else {
-                                Log.e("Gimbal", "Yaw rotation failed: " + djiError.getDescription());
-                            }
-                        }
-                    });
+                    camera.setYaw(yaw_adjust);
                     break;
                 case "roll":
                     if(symbol == '+'){
@@ -460,18 +527,7 @@ public class ILMButtons {
                     }else if(symbol == '-'){
                         roll_adjust -= 1;
                     }
-                    gimbal.rotate(new Rotation.Builder().roll(roll_adjust)
-                            .mode(RotationMode.ABSOLUTE_ANGLE)
-                            .build(), new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            if (djiError == null) {
-                                Log.d("Gimbal", "Roll rotation successful");
-                            } else {
-                                Log.e("Gimbal", "Roll rotation failed: " + djiError.getDescription());
-                            }
-                        }
-                    });
+                    camera.setRoll(roll_adjust);
                     break;
                 case "pitch":
                     if(symbol == '+'){
@@ -479,20 +535,93 @@ public class ILMButtons {
                     }else if(symbol == '-'){
                         pitch_adjust -= 1;
                     }
-                    gimbal.rotate(new Rotation.Builder().pitch(pitch_adjust)
-                            .mode(RotationMode.ABSOLUTE_ANGLE)
-                            .build(), new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            if (djiError == null) {
-                                Log.d("Gimbal", "Pitch rotation successful");
-                            } else {
-                                Log.e("Gimbal", "Pitch rotation failed: " + djiError.getDescription());
-                            }
-                        }
-                    });
+                    camera.setPitch(pitch_adjust);
                     break;
             }
         }
+//        Gimbal gimbal = DJISDKManager.getInstance().getProduct().getGimbal();
+//        if (gimbal != null) {
+//            switch (str){
+//                case "yaw":
+//                    if(symbol == '+'){
+//                        yaw_adjust += 1;
+//                    }else if(symbol == '-'){
+//                        yaw_adjust -= 1;
+//                    }
+//                    gimbal.rotate(new Rotation.Builder().yaw(yaw_adjust)
+//                            .mode(RotationMode.ABSOLUTE_ANGLE)
+//                            .build(), new CommonCallbacks.CompletionCallback() {
+//                        @Override
+//                        public void onResult(DJIError djiError) {
+//                            if (djiError == null) {
+//                                Log.d("Gimbal", "Yaw rotation successful");
+//                            } else {
+//                                Log.e("Gimbal", "Yaw rotation failed: " + djiError.getDescription());
+//                            }
+//                        }
+//                    });
+//                    break;
+//                case "roll":
+//                    if(symbol == '+'){
+//                        roll_adjust += 1;
+//                    }else if(symbol == '-'){
+//                        roll_adjust -= 1;
+//                    }
+//                    gimbal.rotate(new Rotation.Builder().roll(roll_adjust)
+//                            .mode(RotationMode.ABSOLUTE_ANGLE)
+//                            .build(), new CommonCallbacks.CompletionCallback() {
+//                        @Override
+//                        public void onResult(DJIError djiError) {
+//                            if (djiError == null) {
+//                                Log.d("Gimbal", "Roll rotation successful");
+//                            } else {
+//                                Log.e("Gimbal", "Roll rotation failed: " + djiError.getDescription());
+//                            }
+//                        }
+//                    });
+//                    break;
+//                case "pitch":
+//                    if(symbol == '+'){
+//                        pitch_adjust += 1;
+//                    }else if(symbol == '-'){
+//                        pitch_adjust -= 1;
+//                    }
+//                    gimbal.rotate(new Rotation.Builder().pitch(pitch_adjust)
+//                            .mode(RotationMode.ABSOLUTE_ANGLE)
+//                            .build(), new CommonCallbacks.CompletionCallback() {
+//                        @Override
+//                        public void onResult(DJIError djiError) {
+//                            if (djiError == null) {
+//                                Log.d("Gimbal", "Pitch rotation successful");
+//                            } else {
+//                                Log.e("Gimbal", "Pitch rotation failed: " + djiError.getDescription());
+//                            }
+//                        }
+//                    });
+//                    break;
+//            }
+//        }
+    }
+
+    public void ChangeWaypoint(ILMWaypoints ilmWaypoints) {
+        HashMap waypoints = ilmWaypoints.getWaypoints();
+        if(count == waypoints.size()/4){
+            count = 0;
+        }
+        double lat = Double.parseDouble((String) waypoints.get("Latitude" + count));
+        double lon = Double.parseDouble((String) waypoints.get("Longitude" + count));
+        double alt = Double.parseDouble((String) waypoints.get("Altitude" + count));
+        count++;
+        goTo.setWaypoint(lat, lon, alt);
+    }
+
+    public void uploadRoute(ILMWaypoints ilmWaypoints, ILMUploadWaypoints ilmUploadWaypoints, ILMMapController ilmMapController) {
+        counter = ilmWaypoints.getCounter();
+        count = 0;
+        ilmUploadWaypoints.readCSV(ilmWaypoints, ilmMapController);
+    }
+
+    public void removeWaypoint(ILMWaypoints ilmWaypoints, ILMMapController ilmMapController) {
+        ilmWaypoints.removeWaypoint(ilmMapController);
     }
 }
