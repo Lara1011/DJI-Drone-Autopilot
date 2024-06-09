@@ -4,12 +4,19 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 
+import com.dji.sdk.sample.R;
 import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
 
 import org.osmdroid.config.Configuration;
@@ -21,8 +28,10 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.sdk.flightcontroller.FlightController;
 
@@ -30,11 +39,31 @@ public class ILMMapController {
     private MapView mapView;
     private Context context;
     private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
+    private Handler locationUpdateHandler;
+    private Runnable updateTimeRunnable;
+    private Marker previousMarker = null;
+    private List<Marker> waypointMarkers = new ArrayList<>();
 
+    private Drawable arrowIcon;
+    private Drawable pinIcon;
 
     public ILMMapController(Context context, MapView mapView) {
         this.mapView = mapView;
         this.context = context;
+        initIcons(context);
+    }
+
+    private void initIcons(Context context) {
+        arrowIcon = ResourcesCompat.getDrawable(context.getResources(), R.drawable.arrow, null);
+        pinIcon = ResourcesCompat.getDrawable(context.getResources(), R.drawable.pin, null);
+    }
+
+    private Drawable resizeDrawable(Drawable image, int width, int height) {
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        image.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        image.draw(canvas);
+        return new BitmapDrawable(context.getResources(), bitmap);
     }
 
     protected void init(Context context, MapView mapView) {
@@ -58,44 +87,63 @@ public class ILMMapController {
     }
 
     private void updatePinMark(double[] points) {
-        Handler locationUpdateHandler = new Handler();
+        locationUpdateHandler = new Handler();
         FlightController flightController = ModuleVerificationUtil.getFlightController();
-        final Marker[] previousMarker = {null}; // Define previousMarker here
 
-        Runnable updateTimeRunnable = new Runnable() {
+        updateTimeRunnable = new Runnable() {
             @Override
             public void run() {
                 if (flightController != null) {
-                    LocationCoordinate3D aircraftLocation = flightController.getState().getAircraftLocation();
+                    FlightControllerState state = flightController.getState();
+                    LocationCoordinate3D aircraftLocation = state.getAircraftLocation();
                     if (aircraftLocation != null) {
                         points[0] = aircraftLocation.getLatitude();
                         points[1] = aircraftLocation.getLongitude();
                         points[2] = aircraftLocation.getAltitude();
                         GeoPoint point = new GeoPoint(points[0], points[1], points[2]);
 
-                        // Remove the previous marker if it exists
-                        if (previousMarker[0] != null) {
-                            mapView.getOverlays().remove(previousMarker[0]);
+                        if (previousMarker != null) {
+                            mapView.getOverlays().remove(previousMarker);
                         }
 
-                        // Add a new marker
                         Marker startMarker = new Marker(mapView);
                         startMarker.setPosition(point);
                         startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+
+                        if (state.isFlying()) {
+                            float heading = (float) state.getAttitude().yaw; // Get the yaw angle in degrees
+                            Drawable rotatedArrowIcon = rotateDrawable(arrowIcon, heading); // Rotate arrow icon
+                            startMarker.setIcon(resizeDrawable(rotatedArrowIcon, 50, 50)); // Resize and set the rotated arrow icon
+                        } else {
+                            startMarker.setIcon(resizeDrawable(arrowIcon, 50, 50)); // Resize and set the arrow icon
+                        }
                         mapView.getOverlays().add(startMarker);
-
-                        // Set the current marker as the previous marker
-                        previousMarker[0] = startMarker;
-
+                        previousMarker = startMarker;
                         mapView.getController().setCenter(point);
                     }
                 }
                 locationUpdateHandler.postDelayed(this, 1000);
             }
         };
-        updateTimeRunnable.run();
+        locationUpdateHandler.post(updateTimeRunnable);
     }
 
+
+    private Drawable rotateDrawable(Drawable drawable, float angleDegrees) {
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angleDegrees);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        return new BitmapDrawable(context.getResources(), rotatedBitmap);
+    }
+
+
+
+    public void stopLocationUpdates() {
+        if (locationUpdateHandler != null && updateTimeRunnable != null) {
+            locationUpdateHandler.removeCallbacks(updateTimeRunnable);
+        }
+    }
 
     private void requestPermissionsIfNecessary(String[] permissions) {
         ArrayList<String> permissionsToRequest = new ArrayList<>();
@@ -110,6 +158,42 @@ public class ILMMapController {
                     (Activity) context,
                     permissionsToRequest.toArray(new String[0]),
                     REQUEST_PERMISSIONS_REQUEST_CODE);
+        }
+    }
+
+    public void addWaypoint(String latitude, String longitude, String altitude) {
+        double lat = Double.parseDouble(latitude);
+        double lon = Double.parseDouble(longitude);
+        double alt = Double.parseDouble(altitude);
+        GeoPoint waypoint = new GeoPoint(lat, lon, alt);
+
+        Marker waypointMarker = new Marker(mapView);
+        waypointMarker.setPosition(waypoint);
+        waypointMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+        waypointMarker.setIcon(resizeDrawable(pinIcon, 50, 50));
+
+        mapView.getOverlays().add(waypointMarker);
+        waypointMarkers.add(waypointMarker);
+        mapView.getController().setCenter(waypoint);
+    }
+
+    public void removeWaypoint(String latitude, String longitude, String altitude) {
+        double lat = Double.parseDouble(latitude);
+        double lon = Double.parseDouble(longitude);
+        double alt = Double.parseDouble(altitude);
+
+        Marker markerToRemove = null;
+        for (Marker marker : waypointMarkers) {
+            GeoPoint markerPosition = marker.getPosition();
+            if (markerPosition.getLatitude() == lat && markerPosition.getLongitude() == lon && markerPosition.getAltitude() == alt) {
+                markerToRemove = marker;
+                break;
+            }
+        }
+
+        if (markerToRemove != null) {
+            mapView.getOverlays().remove(markerToRemove);
+            waypointMarkers.remove(markerToRemove);
         }
     }
 }
