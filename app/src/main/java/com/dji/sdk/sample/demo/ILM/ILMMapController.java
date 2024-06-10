@@ -2,6 +2,7 @@ package com.dji.sdk.sample.demo.ILM;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -119,7 +120,7 @@ public class ILMMapController {
                         }
                         mapView.getOverlays().add(startMarker);
                         previousMarker = startMarker;
-                        mapView.getController().setCenter(point);
+//                        mapView.getController().setCenter(point);
                     }
                 }
                 locationUpdateHandler.postDelayed(this, 1000);
@@ -162,19 +163,26 @@ public class ILMMapController {
     }
 
     public void addWaypoint(String latitude, String longitude, String altitude) {
-        double lat = Double.parseDouble(latitude);
-        double lon = Double.parseDouble(longitude);
-        double alt = Double.parseDouble(altitude);
-        GeoPoint waypoint = new GeoPoint(lat, lon, alt);
+        FlightController flightController = ModuleVerificationUtil.getFlightController();
+        LocationCoordinate3D aircraftLocation = flightController.getState().getAircraftLocation();
+        if (aircraftLocation != null) {
+            double lat = aircraftLocation.getLatitude();
+            double lon = aircraftLocation.getLongitude();
+            double alt = aircraftLocation.getAltitude();
+            GeoPoint waypoint = new GeoPoint(lat, lon, alt);
 
-        Marker waypointMarker = new Marker(mapView);
-        waypointMarker.setPosition(waypoint);
-        waypointMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-        waypointMarker.setIcon(resizeDrawable(pinIcon, 50, 50));
+            Marker waypointMarker = new Marker(mapView);
+            waypointMarker.setPosition(waypoint);
+            waypointMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+            waypointMarker.setIcon(resizeDrawable(pinIcon, 50, 50));
 
-        mapView.getOverlays().add(waypointMarker);
-        waypointMarkers.add(waypointMarker);
-        mapView.getController().setCenter(waypoint);
+            mapView.getOverlays().add(waypointMarker);
+            waypointMarkers.add(waypointMarker);
+            mapView.getController().setCenter(waypoint);
+            waypointMarker.setSnippet("Latitude: " + latitude + "\nLongitude: " + longitude + "\nAltitude: " + altitude);
+            waypointMarker.setTextLabelFontSize(12);
+//            waypointMarker.setTextIcon("Waypoint " + (waypointMarkers.size() - 1));
+        }
     }
 
     public void removeWaypoint(String latitude, String longitude, String altitude) {
