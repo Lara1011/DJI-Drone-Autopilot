@@ -120,7 +120,7 @@ public class ILMMapController {
                         }
                         mapView.getOverlays().add(startMarker);
                         previousMarker = startMarker;
-//                        mapView.getController().setCenter(point);
+                        mapView.getController().setCenter(point);
                     }
                 }
                 locationUpdateHandler.postDelayed(this, 1000);
