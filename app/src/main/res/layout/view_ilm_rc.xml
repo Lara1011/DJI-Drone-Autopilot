@@ -266,6 +266,15 @@
             android:background="@drawable/ilmstartrecord"
             tools:layout_editor_absoluteY="365dp" />
 
+        <Button
+            android:id="@+id/btn_ILM_LoadCSV"
+            android:layout_width="47dp"
+            android:layout_height="47dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="4dp"
+            android:text="CSV"
+            android:layout_toEndOf="@+id/btn_ILM_Record" />
 
     </RelativeLayout>
 
@@ -375,10 +384,65 @@
         app:layout_constraintStart_toEndOf="@+id/relativeLayout2"
         />
 
+    <Button
+        android:id="@+id/btn_ILM_camera_controls"
+        android:layout_width="82dp"
+        android:layout_height="39dp"
+        android:layout_toEndOf="@id/btn_ILM_Waypoint"
+        android:text="Adjust Camera"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_ILM_Waypoint" />
+
+    <LinearLayout
+        android:id="@+id/cameraControlsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_ILM_camera_controls"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btn_ILM_camera_pitch_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+" />
+
+        <Button
+            android:id="@+id/btn_ILM_camera_yaw_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+" />
+
+        <Button
+            android:id="@+id/btn_ILM_camera_roll_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+" />
+
+        <!-- Minus buttons -->
+        <Button
+            android:id="@+id/btn_ILM_camera_pitch_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <Button
+            android:id="@+id/btn_ILM_camera_yaw_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-" />
+
+        <Button
+            android:id="@+id/btn_ILM_camera_roll_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-" />
+    </LinearLayout>
+
     <RelativeLayout
         android:id="@+id/waypointButtonsLayout"
         android:layout_width="148dp"
-        android:layout_height="99dp"
+        android:layout_height="147dp"
         android:layout_below="@+id/btn_ILM_Waypoint"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/btn_ILM_Waypoint"
@@ -391,9 +455,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginStart="1dp"
-            android:layout_marginBottom="52dp"
+            android:layout_marginStart="3dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="99dp"
             android:background="@drawable/round_btn"
             android:text="@string/add_waypoint"
             android:textColor="@color/common_text_color"
@@ -412,7 +478,33 @@
             android:textColor="@color/common_text_color"
             android:textSize="15sp" />
 
+        <Button
+            android:id="@+id/btn_ILM_Change_Waypoint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/btn_ILM_Repeat_Route"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="2dp"
+            android:layout_marginBottom="55dp"
+            android:background="@drawable/round_btn"
+            android:text="@string/change_waypoint"
+            android:textColor="@color/common_text_color"
+            android:textSize="15sp" />
+        <Button
+            android:id="@+id/btn_ILM_Remove_Waypoint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/btn_ILM_Change_Waypoint"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="2dp"
+            android:layout_marginBottom="55dp"
+            android:background="@drawable/round_btn"
+            android:text="@string/remove_waypoint"
+            android:textColor="@color/common_text_color"
+            android:textSize="15sp" />
+
     </RelativeLayout>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
