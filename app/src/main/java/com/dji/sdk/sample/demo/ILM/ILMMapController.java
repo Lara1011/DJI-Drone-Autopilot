@@ -166,9 +166,9 @@ public class ILMMapController {
         FlightController flightController = ModuleVerificationUtil.getFlightController();
         LocationCoordinate3D aircraftLocation = flightController.getState().getAircraftLocation();
         if (aircraftLocation != null) {
-            double lat = aircraftLocation.getLatitude();
-            double lon = aircraftLocation.getLongitude();
-            double alt = aircraftLocation.getAltitude();
+            double lat = Double.parseDouble(latitude);
+            double lon = Double.parseDouble(longitude);
+            double alt = Double.parseDouble(altitude);
             GeoPoint waypoint = new GeoPoint(lat, lon, alt);
 
             Marker waypointMarker = new Marker(mapView);
