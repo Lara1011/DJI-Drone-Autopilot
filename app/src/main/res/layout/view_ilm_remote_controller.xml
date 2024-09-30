@@ -1,0 +1,1035 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context="com.dji.sdk.sample.demo.ILM.ILM_RemoteControllerView">
+
+    <!--    <TextureView-->
+    <!--        android:id="@+id/video_previewer_surface"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_alignParentBottom="true"-->
+    <!--        android:layout_centerHorizontal="true" />-->
+
+    <!--    <ImageView-->
+    <!--        android:id="@+id/imageView_ILM_Image"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="match_parent"-->
+    <!--        android:visibility="visible" />-->
+
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <com.dji.sdk.sample.internal.utils.VideoFeedView
+                android:id="@+id/videoFeedView_ILM"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <TextureView
+                android:id="@+id/video_previewer_surface"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <ImageView
+                android:id="@+id/imageView_ILM_Image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <View
+                android:id="@+id/view_ILM_coverView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/buttonsScrollView"
+        android:layout_alignParentEnd="true"
+        android:orientation="vertical">
+
+
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapView_ILM"
+            android:layout_width="100dp"
+            android:layout_height="75dp"
+            android:layout_marginBottom="5dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView_ILM_PeopleDetected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/linearLayout2"
+        android:layout_alignStart="@+id/linearLayout2"
+        android:background="@color/red"
+        android:text="People detected: "
+        android:textColor="@color/white"
+        android:textSize="10sp" />
+
+    <Button
+        android:id="@+id/btn_ILM_MapResize"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_above="@+id/linearLayout2"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="-30dp"
+        android:background="@drawable/ilm_map_resize" />
+
+    <TableLayout
+        android:id="@+id/tableLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/battery"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/speed"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/distance"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/x"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/y"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/z"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/pitch"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/roll"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/yaw"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/time_amp_date"
+                android:textColor="@color/white" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/textView_ILM_BatteryInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0per"
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/textView_ILM_SpeedInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0_m_s"
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/textView_ILM_DistanceInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0_m"
+
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/textView_ILM_XInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0"
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/textView_ILM_YInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0"
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/textView_ILM_ZInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0"
+
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/textView_ILM_PitchInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0"
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/textView_ILM_RollInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0"
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/textView_ILM_YawInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0"
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/textView_ILM_DateInt1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/time_date"
+                android:textColor="#FF0000" />
+        </TableRow>
+    </TableLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_ILM_ReturnToHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tableLayout"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView_ILM_ReturnToHome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/red"
+            android:text="@string/return_to_home"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="8sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_ILM_ReturnToHome"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/ilm_drone_return_to_home" />
+    </LinearLayout>
+
+    <TableLayout
+        android:id="@+id/tableRow_ILM_LatLonAlt"
+        android:layout_width="165dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="75dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/latitude"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/textView_ILM_LatitudeInt1"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0"
+                android:textColor="#FF0000" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/longitude"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/textView_ILM_LongitudeInt1"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0"
+                android:textColor="#FF0000" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/red"
+                android:gravity="center"
+                android:text="@string/altitude"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/textView_ILM_AltitudeInt1"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:background="#0D852323"
+                android:gravity="center"
+                android:text="@string/_0"
+                android:textColor="#FF0000" />
+        </TableRow>
+    </TableLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/buttonsScrollView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="5dp"
+        android:scrollbars="horizontal">
+
+        <LinearLayout
+            android:id="@+id/buttons_relativeLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <!--            <Button-->
+            <!--                android:id="@+id/btn_ILM_Panic_Stop"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:background="@drawable/ilm_round_btn_panic"-->
+            <!--                android:text="@string/panic"-->
+            <!--                android:textColor="@color/common_text_color"-->
+            <!--                android:textSize="15sp"-->
+            <!--                android:textStyle="bold" />-->
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_Take_Off"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_ILM_Take_Off"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/red"
+                    android:text="@string/take_off"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ILM_Take_Off"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ilm_drone_takeoff" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_Stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_ILM_Stop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/red"
+                    android:text="@string/stop"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ILM_Stop"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ilm_drone_stop" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_Land"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_ILM_Land"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/red"
+                    android:text="@string/land"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ILM_Land"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ilm_drone_land" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_GoTo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_ILM_GoTo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/red"
+                    android:text="@string/go_to"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ILM_GoTo"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ilm_drone_go_to" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_Waypoint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_ILM_Waypoint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/red"
+                    android:text="Waypoint"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ILM_Waypoint"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ilm_waypoint"
+                    android:onClick="toggleMenu" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_AddRemoveWaypoint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/layout_ILM_AddWaypoint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textView_ILM_AddWaypoint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/red"
+                        android:text="Add"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_AddWaypoint"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/ilm_addwaypoint" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_ILM_RemoveWaypoint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textView_ILM_RemoveWaypoint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/red"
+                        android:text="Remove"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_RemoveWaypoint"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/ilm_removewaypoint" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_ILM_RepeatRoute"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textView_ILM_RepeatRoute"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/red"
+                        android:text="@string/repeat_route"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_RepeatRoute"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/ilm_drone_repeat_route" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_Enable_VirtualStick"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_ILM_Enable_VirtualStick"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/red"
+                    android:text="@string/virtual_stick"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ILM_Enable_VirtualStick"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ilm_drone_virtualstick" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_Record"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_ILM_Record"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/red"
+                    android:text="@string/start_recording"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ILM_Record"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ilm_drone_capture_video_off" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_CameraAdjust"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_ILM_CameraAdjust"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/red"
+                    android:text="@string/camera_adjust"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ILM_CameraAdjust"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ilm_drone_camera_adjust" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_AdjustPitchRollYaw"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/layout_ILM_AdjustPitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textView_ILM_AdjustPitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/red"
+                        android:text="Pitch"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/btn_ILM_AdjustPitchPlus"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@drawable/ilm_addwaypoint" />
+
+                        <Button
+                            android:id="@+id/btn_ILM_AdjustPitchMinus"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginTop="5dp"
+                            android:background="@drawable/ilm_removewaypoint" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_ILM_AdjustRoll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textView_ILM_AdjustRoll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/red"
+                        android:text="Roll"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/btn_ILM_AdjustRollPlus"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@drawable/ilm_addwaypoint" />
+
+                        <Button
+                            android:id="@+id/btn_ILM_AdjustRollMinus"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginTop="5dp"
+                            android:background="@drawable/ilm_removewaypoint" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_ILM_AdjustYaw"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textView_ILM_AdjustYaw"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@color/red"
+                        android:text="Yaw"
+                        android:textColor="@color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/btn_ILM_AdjustYawPlus"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@drawable/ilm_addwaypoint" />
+
+                        <Button
+                            android:id="@+id/btn_ILM_AdjustYawMinus"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_marginTop="5dp"
+                            android:background="@drawable/ilm_removewaypoint" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_ILM_PeopleDetection"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_ILM_PeopleDetection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/red"
+                    android:text="@string/people_detecion"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btn_ILM_PeopleDetection"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ilm_people_detection" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <RelativeLayout
+        android:id="@+id/mainMenuLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/layout_ILM_ReturnToHome"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp">
+
+        <LinearLayout
+            android:id="@+id/layout_expandedMenuLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btn_ILM_Missions"
+                android:layout_width="70dp"
+                android:layout_height="40dp"
+                android:background="@drawable/round_btn"
+                android:onClick="toggleMissions"
+                android:text="Missions"
+                android:textColor="@color/common_text_color"
+                android:textSize="10sp" />
+
+            <ScrollView
+                android:id="@+id/scrollView_missionsList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/missionsLinearLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Mission items here -->
+                    <Button
+                        android:id="@+id/btn_ILM_Mission_1"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/round_btn"
+                        android:text="Mission 1"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_Mission_2"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/round_btn"
+                        android:text="Mission 2"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_Mission_3"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/round_btn"
+                        android:text="Mission 3"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+                </LinearLayout>
+            </ScrollView>
+
+            <Button
+                android:id="@+id/btn_ILM_Waypoints"
+                android:layout_width="70dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/round_btn_red"
+                android:onClick="toggleWaypoints"
+                android:text="Waypoints"
+                android:textColor="@color/common_text_color"
+                android:textSize="10sp" />
+
+            <ScrollView
+                android:id="@+id/scrollView_waypointsList"
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/waypointsLinearLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Waypoint items here -->
+                    <Button
+                        android:id="@+id/btn_ILM_Waypoint_1"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/round_btn_red"
+                        android:text="Waypoint 1"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_Waypoint_2"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/round_btn_red"
+                        android:text="Waypoint 2"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_Waypoint_3"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/round_btn_red"
+                        android:text="Waypoint 3"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_Waypoint_4"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/round_btn_red"
+                        android:text="Waypoint 4"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_Waypoint_5"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/round_btn_red"
+                        android:text="Waypoint 5"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_Waypoint_6"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/round_btn_red"
+                        android:text="Waypoint 6"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_Waypoint_7"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/round_btn_red"
+                        android:text="Waypoint 7"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+
+                    <Button
+                        android:id="@+id/btn_ILM_Waypoint_8"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/round_btn_red"
+                        android:text="Waypoint 8"
+                        android:textColor="@color/common_text_color"
+                        android:textSize="10sp" />
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>

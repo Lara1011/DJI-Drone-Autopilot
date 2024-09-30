@@ -8,6 +8,7 @@ import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
 
 import com.dji.sdk.sample.R;
+import com.dji.sdk.sample.demo.ILM.ILM_RemoteControllerView;
 import com.dji.sdk.sample.demo.accessory.AccessoryAggregationView;
 import com.dji.sdk.sample.demo.accessory.AudioFileListManagerView;
 import com.dji.sdk.sample.demo.airlink.RebootWiFiAirlinkView;
@@ -45,7 +46,6 @@ import com.dji.sdk.sample.demo.gimbal.MoveGimbalWithSpeedView;
 import com.dji.sdk.sample.demo.gimbal.PushGimbalDataView;
 import com.dji.sdk.sample.demo.key.KeyedInterfaceView;
 import com.dji.sdk.sample.demo.keymanager.KeyManagerView;
-import com.dji.sdk.sample.demo.ILM.ILMRemoteControllerView;
 import com.dji.sdk.sample.demo.lidar.LidarView;
 import com.dji.sdk.sample.demo.lookat.LookAtMissionView;
 import com.dji.sdk.sample.demo.missionoperator.FollowMeMissionOperatorView;
@@ -94,10 +94,8 @@ public class DemoListView extends FrameLayout {
 
         // Build model for ListView
         ListItem.ListBuilder builder = new ListItem.ListBuilder();
-        builder.addGroup(R.string.component_listview_ilm_group,
-                false,
-                new GroupItem(R.string.component_listview_ilm_remote_controller, ILMRemoteControllerView.class));
-
+        builder.addGroup(R.string.component_listview_ilm_remote_controller, false,
+                new GroupItem(R.string.component_listview_mobile_remote_controller, ILM_RemoteControllerView.class));
         builder.addGroup(R.string.component_listview_sdk_4_16,
                 false,
                 new GroupItem(R.string.uas_view, UASView.class),

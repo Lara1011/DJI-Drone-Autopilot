@@ -6,32 +6,25 @@ import android.content.Context;
 import android.os.Environment;
 import android.widget.Toast;
 
-import com.dji.sdk.sample.internal.controller.DJISampleApplication;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 
-import dji.common.mission.waypoint.Waypoint;
-import dji.sdk.flightcontroller.FlightController;
 
-public class ILMWaypoints {
+public class ILM_Waypoints {
     private Context context;
     private FileWriter writer;
-    private static ILMInfoUpdate infoUpdate;
     private HashMap<String, String> waypoints = new HashMap<String, String>();
-    //private List<Waypoint> waypoints2 = new ArrayList<Waypoint>();
+    private ILM_StatusBar statusBar;
     private int counter = 0;
 
-    public ILMWaypoints(Context context, ILMInfoUpdate infoUpdate) {
+    public ILM_Waypoints(Context context, ILM_StatusBar statusBar) {
         this.context = context;
-        this.infoUpdate = infoUpdate;
+        this.statusBar = statusBar;
     }
 
     private void createCSVFile() {
@@ -68,36 +61,36 @@ public class ILMWaypoints {
         }
     }
 
-    protected void updateCSVInfo(ILMMapController mapController) {
+    protected void updateCSVInfo(ILM_MapController mapController) {
         if (writer != null) {
             try {
-                writer.append(infoUpdate.getDate()).append(",").
-                        append(infoUpdate.getLatitude()).append(",").
-                        append(infoUpdate.getLongitude()).append(",").
-                        append(infoUpdate.getAltitude()).append(',').
-                        append(infoUpdate.getPitch()).append("\n");
+                writer.append(statusBar.getDate()).append(",").
+                        append(statusBar.getLatitude()).append(",").
+                        append(statusBar.getLongitude()).append(",").
+                        append(statusBar.getAltitude()).append(',').
+                        append(statusBar.getPitch()).append("\n");
                 writer.flush();
                 showToast("Waypoint added !");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        waypoints.put("Latitude"+ counter, infoUpdate.getLatitude());
-        waypoints.put("Longitude"+ counter, infoUpdate.getLongitude());
-        waypoints.put("Altitude"+ counter, infoUpdate.getAltitude());
-        waypoints.put("Pitch"+ counter, infoUpdate.getPitch());
-        mapController.addWaypoint(infoUpdate.getLatitude(), infoUpdate.getLongitude(), infoUpdate.getAltitude());
-        //waypoints2.add(new Waypoint(Double.parseDouble(infoUpdate.getLatitude()), Double.parseDouble(infoUpdate.getLongitude()), Float.parseFloat(infoUpdate.getAltitude())));
+        waypoints.put("Latitude" + counter, statusBar.getLatitude());
+        waypoints.put("Longitude" + counter, statusBar.getLongitude());
+        waypoints.put("Altitude" + counter, statusBar.getAltitude());
+        waypoints.put("Pitch" + counter, statusBar.getPitch());
+        mapController.addWaypoint(statusBar.getLatitude(), statusBar.getLongitude(), statusBar.getAltitude());
         counter++;
     }
-    public void addWaypoint(String latitude, String longitude, String altitude, String pitch, int count){
-        waypoints.put("Latitude"+ count, latitude);
-        waypoints.put("Longitude"+ count, longitude);
-        waypoints.put("Altitude"+ count, altitude);
-        waypoints.put("Pitch"+ count, pitch);
+
+    public void addWaypoint(String latitude, String longitude, String altitude, String pitch, int count) {
+        waypoints.put("Latitude" + count, latitude);
+        waypoints.put("Longitude" + count, longitude);
+        waypoints.put("Altitude" + count, altitude);
+        waypoints.put("Pitch" + count, pitch);
         if (writer != null) {
             try {
-                writer.append(infoUpdate.getDate()).append(",").
+                writer.append(statusBar.getDate()).append(",").
                         append(latitude).append(",").
                         append(longitude).append(",").
                         append(altitude).append(',').
@@ -110,34 +103,35 @@ public class ILMWaypoints {
         }
     }
 
-    public void removeWaypoint(ILMMapController ilmMapController){
-        if(waypoints.isEmpty())
+    public void removeWaypoint(ILM_MapController mapController) {
+        if (waypoints.isEmpty())
             return;
-        ilmMapController.removeWaypoint(waypoints.get("Latitude"+ (counter-1)), waypoints.get("Longitude"+ (counter-1)), waypoints.get("Altitude"+ (counter-1)));
-        waypoints.remove("Latitude"+ (counter-1));
-        waypoints.remove("Longitude"+ (counter-1));
-        waypoints.remove("Altitude"+ (counter-1));
-        waypoints.remove("Pitch"+ (counter-1));
+        mapController.removeWaypoint(waypoints.get("Latitude" + (counter - 1)), waypoints.get("Longitude" + (counter - 1)), waypoints.get("Altitude" + (counter - 1)));
+        waypoints.remove("Latitude" + (counter - 1));
+        waypoints.remove("Longitude" + (counter - 1));
+        waypoints.remove("Altitude" + (counter - 1));
+        waypoints.remove("Pitch" + (counter - 1));
         counter--;
     }
 
-
-    public HashMap<String, String> getWaypoints(){
+    public HashMap<String, String> getWaypoints() {
         return waypoints;
     }
-    public void setWaypoints(HashMap<String, String> waypoints){
+
+    public void setWaypoints(HashMap<String, String> waypoints) {
         this.waypoints = waypoints;
     }
 
-    public int getCounter(){
+    public int getCounter() {
         return counter;
     }
-    public void setCounter(int counter){
+
+    public void setCounter(int counter) {
         this.counter = counter;
     }
 
-    public double getAltitude(){
-        return Double.parseDouble(infoUpdate.getAltitude());
+    public double getAltitude() {
+        return Double.parseDouble(statusBar.getAltitude());
     }
 
     protected void createLogBrain() {

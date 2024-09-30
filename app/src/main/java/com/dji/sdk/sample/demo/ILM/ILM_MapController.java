@@ -36,7 +36,7 @@ import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.LocationCoordinate3D;
 import dji.sdk.flightcontroller.FlightController;
 
-public class ILMMapController {
+public class ILM_MapController {
     private MapView mapView;
     private Context context;
     private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
@@ -47,16 +47,18 @@ public class ILMMapController {
 
     private Drawable arrowIcon;
     private Drawable pinIcon;
+    private Drawable destinationIcon;
 
-    public ILMMapController(Context context, MapView mapView) {
+    public ILM_MapController(Context context, MapView mapView) {
         this.mapView = mapView;
         this.context = context;
         initIcons(context);
     }
 
     private void initIcons(Context context) {
-        arrowIcon = ResourcesCompat.getDrawable(context.getResources(), R.drawable.arrow, null);
-        pinIcon = ResourcesCompat.getDrawable(context.getResources(), R.drawable.pin, null);
+        arrowIcon = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ilm_arrow, null);
+        pinIcon = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ilm_red_pin, null);
+        destinationIcon = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ilm_green_pin, null);
     }
 
     private Drawable resizeDrawable(Drawable image, int width, int height) {
@@ -67,7 +69,7 @@ public class ILMMapController {
         return new BitmapDrawable(context.getResources(), bitmap);
     }
 
-    protected void init(Context context, MapView mapView) {
+    protected void init() {
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
 
         mapView.setTileSource(TileSourceFactory.MAPNIK);
@@ -139,7 +141,6 @@ public class ILMMapController {
     }
 
 
-
     public void stopLocationUpdates() {
         if (locationUpdateHandler != null && updateTimeRunnable != null) {
             locationUpdateHandler.removeCallbacks(updateTimeRunnable);
@@ -203,5 +204,37 @@ public class ILMMapController {
             mapView.getOverlays().remove(markerToRemove);
             waypointMarkers.remove(markerToRemove);
         }
+    }
+
+    public void hideAllWaypoints() {
+        for (Marker marker : waypointMarkers) {
+            mapView.getOverlays().remove(marker);
+        }
+        mapView.invalidate();
+    }
+
+    public void showDestinationPin(double latitude, double longitude, double altitude) {
+        Marker destinationMarker = null;
+        for (Marker marker : waypointMarkers) {
+            GeoPoint markerPosition = marker.getPosition();
+            if (markerPosition.getLatitude() == latitude && markerPosition.getLongitude() == longitude && markerPosition.getAltitude() == altitude) {
+                destinationMarker = marker;
+                break;
+            }
+        }
+        if (destinationMarker != null) {
+            destinationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+            destinationMarker.setIcon(resizeDrawable(destinationIcon, 50, 50));
+            mapView.getOverlays().add(destinationMarker);
+        }
+    }
+
+    public void showAllWaypoints() {
+        hideAllWaypoints();
+        for (Marker marker : waypointMarkers) {
+            marker.setIcon(resizeDrawable(pinIcon, 50, 50));
+            mapView.getOverlays().add(marker);
+        }
+        mapView.invalidate();
     }
 }

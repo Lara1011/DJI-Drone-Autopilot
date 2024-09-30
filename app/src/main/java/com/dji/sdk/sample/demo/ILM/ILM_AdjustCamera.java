@@ -13,12 +13,12 @@ import dji.common.util.CommonCallbacks;
 import dji.sdk.gimbal.Gimbal;
 import dji.sdk.sdkmanager.DJISDKManager;
 
-public class ILMCamera implements ILM_Camera {
+public class ILM_AdjustCamera implements ILM_iAdjustCamera {
     private int yaw;
     private int roll;
     private int pitch;
 
-    public ILMCamera(){
+    public ILM_AdjustCamera() {
         Gimbal gimbal = DJISampleApplication.getProductInstance().getGimbal();
         if (gimbal != null) {
             gimbal.setStateCallback(gimbalState -> {
@@ -30,6 +30,7 @@ public class ILMCamera implements ILM_Camera {
             });
         }
     }
+
     @Override
     public void adjustCamera() {
         Gimbal gimbal = DJISDKManager.getInstance().getProduct().getGimbal();
@@ -84,3 +85,4 @@ public class ILMCamera implements ILM_Camera {
         return this.pitch;
     }
 }
+
