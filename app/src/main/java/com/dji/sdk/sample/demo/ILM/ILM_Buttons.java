@@ -23,6 +23,7 @@ import com.dji.sdk.sample.internal.utils.ToastUtils;
 
 import org.osmdroid.views.MapView;
 
+import java.util.HashMap;
 import java.util.Locale;
 
 import dji.common.error.DJIError;
@@ -58,9 +59,9 @@ public class ILM_Buttons {
 
     protected Button mapResizeBtn;
 
-    private int pitch_adjust = 0;
-    private int yaw_adjust = 0;
-    private int roll_adjust = 0;
+    private int pitch_adjust;
+    private int yaw_adjust;
+    private int roll_adjust;
 
     protected int count = 0;
     protected int setCounter = 0;
@@ -133,6 +134,9 @@ public class ILM_Buttons {
         waypoint7Btn = view.findViewById(R.id.btn_ILM_Waypoint_7);
         waypoint8Btn = view.findViewById(R.id.btn_ILM_Waypoint_8);
 
+        pitch_adjust = cameraAdjust.getPitch();
+        yaw_adjust = cameraAdjust.getYaw();
+        roll_adjust = cameraAdjust.getRoll();
 
         recordBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,21 +149,13 @@ public class ILM_Buttons {
     public void addWaypoint(ILM_Waypoints waypoints, ILM_MapController mapController, ILM_AllWaypoints allWaypoints) {
         if (goTo == null)
             goTo = new ILM_GoTo(waypoints, mapController);
-        if (count == 0) {
-            LocationCoordinate3D aircraftLocation = flightController.getState().getAircraftLocation();
-            double lat2 = 0;
-            double lon2 = 0;
-            double alt2 = 0;
-            if (aircraftLocation != null) {
-                lat2 = aircraftLocation.getLatitude();
-                lon2 = aircraftLocation.getLongitude();
-                alt2 = aircraftLocation.getAltitude();
-            }
+        waypoints.updateCSVInfo(mapController);
+        HashMap<String, String> lastWaypoint = waypoints.getWaypoints();
+        if(count == 0) {
             if (counter < 8) {
-                allWaypoints.addWaypoint(String.valueOf(lat2), String.valueOf(lon2), String.valueOf(alt2), String.valueOf(0), counter);
+                allWaypoints.addWaypoint(lastWaypoint.get("Latitude" + (waypoints.getCounter() - 1)), lastWaypoint.get("Longitude" + (waypoints.getCounter() - 1)), lastWaypoint.get("Altitude" + (waypoints.getCounter() - 1)), String.valueOf(0), counter);
             }
         }
-        waypoints.updateCSVInfo(mapController);
         counter++;
     }
 
