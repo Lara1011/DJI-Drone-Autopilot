@@ -11,6 +11,7 @@ import org.osmdroid.views.MapView;
 
 import android.app.Service;
 import android.graphics.SurfaceTexture;
+import android.speech.SpeechRecognizer;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -183,6 +184,13 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
         missions = new ILM_Missions(getContext(), statusBar, mapController);
         addMissions();
 
+        SpeechRecognizer speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
+        ILM_SpeechRecognizer ilmSpeechRecognizer = new ILM_SpeechRecognizer(context, buttons, waypoints, mapController);
+
+        ILM_WordListening ilmWordListening = new ILM_WordListening(speechRecognizer, ilmSpeechRecognizer);
+        speechRecognizer.setRecognitionListener(ilmWordListening);
+
+        ilmWordListening.startListening();
     }
 
     private void addMissions() {

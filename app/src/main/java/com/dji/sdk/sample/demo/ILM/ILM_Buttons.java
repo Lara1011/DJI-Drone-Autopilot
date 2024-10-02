@@ -25,10 +25,17 @@ import org.osmdroid.views.MapView;
 
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.ConnectionFailSafeBehavior;
 import dji.common.flightcontroller.LocationCoordinate3D;
+import dji.common.flightcontroller.virtualstick.FlightControlData;
+import dji.common.flightcontroller.virtualstick.FlightCoordinateSystem;
+import dji.common.flightcontroller.virtualstick.RollPitchControlMode;
+import dji.common.flightcontroller.virtualstick.VerticalControlMode;
+import dji.common.flightcontroller.virtualstick.YawControlMode;
 import dji.common.util.CommonCallbacks;
 import dji.common.util.CommonCallbacks.CompletionCallback;
 import dji.sdk.flightcontroller.FlightController;
@@ -176,7 +183,8 @@ public class ILM_Buttons {
         flightController.cancelGoHome(null);
         flightController.cancelTakeoff(null);
         flightController.cancelLanding(createCallback("Drone is Stopped!"));
-        goTo.isGoTo = false;
+        if (goTo != null)
+            goTo.isGoTo = false;
         flightController.setVirtualStickModeEnabled(false, null);
     }
 
@@ -401,6 +409,88 @@ public class ILM_Buttons {
         }
         mapView.setLayoutParams(params);
 
+    }
+
+    public void up(){
+        float yaw = flightController.getYawControlMode().value();
+        flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    showToast("Virtual sticks enabled!");
+                } else showToast("nope" + djiError);
+            }
+        });
+        flightController.setVerticalControlMode(VerticalControlMode.POSITION);
+        flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+        flightController.setYawControlMode(YawControlMode.ANGLE);
+        flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            float alt = flightController.getState().getAircraftLocation().getAltitude();
+            @Override
+            public void run() {
+                if (flightController.getState().getAircraftLocation().getAltitude() < alt + 5) {
+                    flightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(0, 0, yaw, alt + 5), // Only adjust yaw to rotate
+                            new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        Log.e("TAG", "Rotation failed: " + djiError.getDescription());
+                                    } else {
+                                        Log.d("TAG", "Rotation successful");
+                                    }
+                                }
+                            });
+                } else {
+                    // Cancel the timer after executing the task 5 times
+                    timer.cancel();
+                }
+            }
+        }, 0, 150);
+    }
+
+    public void down(){
+        flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError djiError) {
+                if (djiError == null) {
+                    showToast("Virtual sticks enabled!");
+                } else showToast("nope" + djiError);
+            }
+        });
+        flightController.setVerticalControlMode(VerticalControlMode.POSITION);
+        flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+        flightController.setYawControlMode(YawControlMode.ANGLE);
+        flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            float yaw = flightController.getYawControlMode().value();
+            float alt = flightController.getState().getAircraftLocation().getAltitude();
+            @Override
+            public void run() {
+                if (flightController.getState().getAircraftLocation().getAltitude() > alt - 5) {
+                    flightController.sendVirtualStickFlightControlData(
+                            new FlightControlData(0, 0, yaw, alt - 5), // Only adjust yaw to rotate
+                            new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    if (djiError != null) {
+                                        Log.e("TAG", "Rotation failed: " + djiError.getDescription());
+                                    } else {
+                                        Log.d("TAG", "Rotation successful");
+                                    }
+                                }
+                            });
+                } else {
+                    // Cancel the timer after executing the task 5 times
+                    timer.cancel();
+                }
+            }
+        }, 0, 150);
     }
 }
 
