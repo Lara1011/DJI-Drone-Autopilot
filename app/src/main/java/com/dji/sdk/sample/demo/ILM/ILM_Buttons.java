@@ -435,7 +435,7 @@ public class ILM_Buttons {
             public void run() {
                 if (flightController.getState().getAircraftLocation().getAltitude() < alt + 5) {
                     flightController.sendVirtualStickFlightControlData(
-                            new FlightControlData(0, 0, yaw, alt + 5), // Only adjust yaw to rotate
+                            new FlightControlData(0, 0, yaw, (float) (alt + 5.1)), // Only adjust yaw to rotate
                             new CommonCallbacks.CompletionCallback() {
                                 @Override
                                 public void onResult(DJIError djiError) {
@@ -449,6 +449,7 @@ public class ILM_Buttons {
                 } else {
                     // Cancel the timer after executing the task 5 times
                     timer.cancel();
+                    flightController.setVirtualStickModeEnabled(false, null);
                 }
             }
         }, 0, 150);
@@ -490,6 +491,7 @@ public class ILM_Buttons {
                 } else {
                     // Cancel the timer after executing the task 5 times
                     timer.cancel();
+                    flightController.setVirtualStickModeEnabled(false, null);
                 }
             }
         }, 0, 150);
