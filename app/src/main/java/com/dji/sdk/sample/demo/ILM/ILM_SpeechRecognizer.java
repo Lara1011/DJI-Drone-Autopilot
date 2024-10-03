@@ -206,7 +206,7 @@ public class ILM_SpeechRecognizer {
                 break;
             case "repeatRoute":
                 Log.e("submitting command", "repeatroute");
-                buttons.RepeatRoute(ilmWaypoints, mapController);
+                buttons.RepeatRoute(ilmWaypoints, mapController, false);
                 break;
             case "up":
                 Log.e("submitting command", "up");

@@ -231,7 +231,7 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
                 buttons.goTo(waypoints, mapController);
                 break;
             case R.id.btn_ILM_RepeatRoute:
-                buttons.RepeatRoute(waypoints, mapController);
+                buttons.RepeatRoute(waypoints, mapController, false);
                 break;
             case R.id.btn_ILM_Enable_VirtualStick:
                 switchToVirtualStickLayout();
@@ -289,13 +289,13 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
                 buttons.waypointsBtn();
                 break;
             case R.id.btn_ILM_Mission_1:
-                buttons.RepeatRoute(missions.loadMission(1), mapController);
+                buttons.RepeatRoute(missions.loadMission(1), mapController, true);
                 break;
             case R.id.btn_ILM_Mission_2:
-                buttons.RepeatRoute(missions.loadMission(2), mapController);
+                buttons.RepeatRoute(missions.loadMission(2), mapController, true);
                 break;
             case R.id.btn_ILM_Mission_3:
-                buttons.RepeatRoute(missions.loadMission(3), mapController);
+                buttons.RepeatRoute(missions.loadMission(3), mapController, true);
                 break;
             case R.id.btn_ILM_Waypoint_1:
                 buttons.setCounter = buttons.count;

@@ -388,8 +388,10 @@ public class ILM_Buttons {
         }
     }
 
-    public void RepeatRoute(ILM_Waypoints waypoints, ILM_MapController mapController) {
+    public void RepeatRoute(ILM_Waypoints waypoints, ILM_MapController mapController, boolean isMission) {
         if (goTo == null)
+            goTo = new ILM_GoTo(waypoints, mapController);
+        if (isMission)
             goTo = new ILM_GoTo(waypoints, mapController);
         goTo.setMode(1);
         goTo.isRepeatRoute = true;
