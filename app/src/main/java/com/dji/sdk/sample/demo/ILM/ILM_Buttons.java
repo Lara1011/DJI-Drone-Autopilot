@@ -49,6 +49,8 @@ public class ILM_Buttons {
     private FlightController flightController = ModuleVerificationUtil.getFlightController();
     private ILM_AdjustCamera cameraAdjust = new ILM_AdjustCamera();
     private ILM_GoTo goTo;
+    private ILM_GoTo goToMissions;
+    private final ILM_FollowMe followMe;
 
     protected boolean isRecording = false;
     private CountDownTimer recordingTimer;
@@ -57,14 +59,14 @@ public class ILM_Buttons {
 
     protected Button returnToHomeBtn, repeatRouteBtn;
     //    protected Button panicStopBtn;
-    protected Button landBtn, takeOffBtn, goToBtn, stopBtn, enableVirtualStickBtn, recordBtn;
+    protected Button landBtn, takeOffBtn, goToBtn, followMeBtn, stopBtn, enableVirtualStickBtn, recordBtn;
     protected Button waypointBtn, addWaypointBtn, removeWaypointBtn;
     protected Button cameraAdjustBtn, adjustPitchPlusBtn, adjustPitchMinusBtn, adjustRollPlusBtn, adjustRollMinusBtn, adjustYawPlusBtn, adjustYawMinusBtn;
 
     protected Button missionsBtn, mission1Btn, mission2Btn, mission3Btn;
     protected Button waypointsBtn, waypoint1Btn, waypoint2Btn, waypoint3Btn, waypoint4Btn, waypoint5Btn, waypoint6Btn, waypoint7Btn, waypoint8Btn;
 
-    protected Button mapResizeBtn;
+    protected Button mapResizeBtn, mapCenterBtn;
 
     private int pitch_adjust;
     private int yaw_adjust;
@@ -93,6 +95,7 @@ public class ILM_Buttons {
     public ILM_Buttons(Context context, View view) {
         this.context = context;
         this.view = view;
+        this.followMe = new ILM_FollowMe(context);
         initUI();
         panicStop();
     }
@@ -104,10 +107,12 @@ public class ILM_Buttons {
         peopleDetectionBtn = view.findViewById(R.id.btn_ILM_PeopleDetection);
 
         mapResizeBtn = view.findViewById(R.id.btn_ILM_MapResize);
+        mapCenterBtn = view.findViewById(R.id.btn_ILM_MapCenter);
 
         landBtn = view.findViewById(R.id.btn_ILM_Land);
         takeOffBtn = view.findViewById(R.id.btn_ILM_Take_Off);
         goToBtn = view.findViewById(R.id.btn_ILM_GoTo);
+        followMeBtn = view.findViewById(R.id.btn_ILM_FollowMe);
         stopBtn = view.findViewById(R.id.btn_ILM_Stop);
 //        panicStopBtn = view.findViewById(R.id.btn_ILM_Panic_Stop);
         enableVirtualStickBtn = view.findViewById(R.id.btn_ILM_Enable_VirtualStick);
@@ -180,12 +185,28 @@ public class ILM_Buttons {
     }
 
     protected void stop() {
-        flightController.cancelGoHome(null);
-        flightController.cancelTakeoff(null);
-        flightController.cancelLanding(createCallback("Drone is Stopped!"));
-        if (goTo != null)
+        if (flightController != null) {
+            flightController.setVirtualStickModeEnabled(false, null);
+            flightController.cancelGoHome(null);
+            flightController.cancelTakeoff(null);
+            flightController.cancelLanding(createCallback("Drone Stopped!"));
+        }
+        if (goTo != null) {
             goTo.isGoTo = false;
-        flightController.setVirtualStickModeEnabled(false, null);
+            goTo.isRepeatRoute = false;
+            goTo.resetCount();
+        }
+        if (goToMissions != null) {
+            goToMissions.isGoTo = false;
+            goToMissions.isRepeatRoute = false;
+            goToMissions.resetCount();
+        }
+        Log.e("stop", "isGoTo.....................");
+        if (followMe.isFollowMe) {
+            Log.e("stop", "followme.....................");
+            followMe.stopFollowing();
+            Log.e("stop", "followme.....................");
+        }
     }
 
     protected void panicStop() {
@@ -199,7 +220,7 @@ public class ILM_Buttons {
         flightController.startLanding(createCallback("Landing!"));
     }
 
-    protected synchronized void goTo(ILM_Waypoints waypoints, ILM_MapController mapController) {
+    protected synchronized void goTo(ILM_Waypoints waypoints, ILM_MapController mapController, boolean isMission) {
         if (waypoints.getWaypoints().isEmpty()) {
             showToast("Please add waypoints first");
             return;
@@ -215,9 +236,19 @@ public class ILM_Buttons {
         Log.e("&Altitude", String.valueOf(alt));
         Log.e("&Latitude", String.valueOf(lat));
         Log.e("&Longitude", String.valueOf(lon));
-        goTo.isGoTo = true;
-        goTo.setWaypoint(lat, lon, alt);
-        goTo.goTo();
+        if (isMission){
+            goToMissions.isGoTo = true;
+            goToMissions.setWaypoint(lat, lon, alt);
+            goToMissions.goTo();
+        }else {
+            goTo.isGoTo = true;
+            goTo.setWaypoint(lat, lon, alt);
+            goTo.goTo();
+        }
+    }
+
+    protected void followMe() {
+        followMe.FollowMe();
     }
 
     public void EnableVirtualStick() {
@@ -391,11 +422,17 @@ public class ILM_Buttons {
     public void RepeatRoute(ILM_Waypoints waypoints, ILM_MapController mapController, boolean isMission) {
         if (goTo == null)
             goTo = new ILM_GoTo(waypoints, mapController);
-        if (isMission)
-            goTo = new ILM_GoTo(waypoints, mapController);
-        goTo.setMode(1);
-        goTo.isRepeatRoute = true;
-        goTo(waypoints, mapController);
+        if (isMission) {
+            goToMissions = new ILM_GoTo(waypoints, mapController);
+            goToMissions.setMode(1);
+            goToMissions.isRepeatRoute = true;
+            goTo(waypoints, mapController, true);
+        }
+        else {
+            goTo.setMode(1);
+            goTo.isRepeatRoute = true;
+            goTo(waypoints, mapController, false);
+        }
     }
 
     public void mapResize(boolean isExpanded, MapView mapView) {

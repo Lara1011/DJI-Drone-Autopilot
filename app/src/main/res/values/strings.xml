@@ -398,5 +398,6 @@
     <string name="return_to_home">Return To Home</string>
     <string name="virtual_stick">Virtual Stick</string>
     <string name="people_detecion">Detect People</string>
+    <string name="follow_me">Follow Me</string>
 
 </resources>

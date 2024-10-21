@@ -80,7 +80,9 @@ public class ILM_GoTo implements ILM_iGoTo {
         flightController.setYawControlMode(YawControlMode.ANGLE);
         flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
 
-        mapController.showDestinationPin(lat, lon, alt);
+        if (mapController != null) {
+            mapController.showDestinationPin(lat, lon, alt);
+        }
         Log.e("--------mode--------", String.valueOf(this.mode));
         if (this.mode == 1) {
             Log.e("--------mode 1--------", String.valueOf(this.mode));
@@ -135,7 +137,8 @@ public class ILM_GoTo implements ILM_iGoTo {
                     Log.e("Distance", String.valueOf(finalDistance[0]));
                     Log.e("yaw", String.valueOf(angle));
                 } else {
-                    mapController.showAllWaypoints();
+                    if (mapController != null)
+                        mapController.showAllWaypoints();
                     forward_timer.cancel();
                     flightController.setVirtualStickModeEnabled(false, null);
                     if (isRepeatRoute) {
@@ -324,5 +327,16 @@ public class ILM_GoTo implements ILM_iGoTo {
 
     public void setIsGoTo(boolean isGoTo) {
         this.isGoTo = isGoTo;
+    }
+
+    public void disableGoTo() {
+        if (flightController != null) {
+            flightController.setVirtualStickModeEnabled(false, null);
+        }
+        this.isGoTo = false;
+    }
+
+    public void resetCount() {
+        this.count = 0;
     }
 }
