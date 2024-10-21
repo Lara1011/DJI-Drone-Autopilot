@@ -202,7 +202,7 @@ public class ILM_SpeechRecognizer {
                 break;
             case "goto":
                 Log.e("submitting command", "goto");
-                buttons.goTo(ilmWaypoints, mapController);
+                buttons.goTo(ilmWaypoints, mapController, false);
                 break;
             case "repeatRoute":
                 Log.e("submitting command", "repeatroute");

@@ -145,6 +145,7 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
         buttons.stopBtn.setOnClickListener(this);
         buttons.landBtn.setOnClickListener(this);
         buttons.goToBtn.setOnClickListener(this);
+        buttons.followMeBtn.setOnClickListener(this);
         buttons.enableVirtualStickBtn.setOnClickListener(this);
 //        buttons.panicStopBtn.setOnClickListener(this);
         buttons.recordBtn.setOnClickListener(this);
@@ -180,9 +181,9 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
         videoFeedView.setCoverView(view);
 
         buttons.mapResizeBtn.setOnClickListener(this);
+        buttons.mapCenterBtn.setOnClickListener(this);
 
         missions = new ILM_Missions(getContext(), statusBar, mapController);
-        addMissions();
 
         SpeechRecognizer speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
         ILM_SpeechRecognizer ilmSpeechRecognizer = new ILM_SpeechRecognizer(context, buttons, waypoints, mapController);
@@ -191,12 +192,6 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
         speechRecognizer.setRecognitionListener(ilmWordListening);
 
         ilmWordListening.startListening();
-    }
-
-    private void addMissions() {
-        for (int i = 0; i < 3; i++) {
-            missions.addMission();
-        }
     }
 
     public void switchToVirtualStickLayout() {
@@ -223,12 +218,16 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
                 break;
             case R.id.btn_ILM_Stop:
                 buttons.stop();
+                mapController.showAllWaypoints();
                 break;
             case R.id.btn_ILM_Land:
                 buttons.land();
                 break;
             case R.id.btn_ILM_GoTo:
-                buttons.goTo(waypoints, mapController);
+                buttons.goTo(waypoints, mapController, false);
+                break;
+            case R.id.btn_ILM_FollowMe:
+                buttons.followMe();
                 break;
             case R.id.btn_ILM_RepeatRoute:
                 buttons.RepeatRoute(waypoints, mapController, false);
@@ -289,58 +288,67 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
                 buttons.waypointsBtn();
                 break;
             case R.id.btn_ILM_Mission_1:
+                missions.clearMissions();
+                missions.addMission(1);
                 buttons.RepeatRoute(missions.loadMission(1), mapController, true);
                 break;
             case R.id.btn_ILM_Mission_2:
+                missions.clearMissions();
+                missions.addMission(2);
                 buttons.RepeatRoute(missions.loadMission(2), mapController, true);
                 break;
             case R.id.btn_ILM_Mission_3:
+                missions.clearMissions();
+                missions.addMission(3);
                 buttons.RepeatRoute(missions.loadMission(3), mapController, true);
                 break;
             case R.id.btn_ILM_Waypoint_1:
                 buttons.setCounter = buttons.count;
                 buttons.count = 0;
-                buttons.goTo(allWaypoints, mapController);
+                buttons.goTo(allWaypoints, mapController, false);
                 break;
             case R.id.btn_ILM_Waypoint_2:
                 buttons.setCounter = buttons.count;
                 buttons.count = 1;
-                buttons.goTo(allWaypoints, mapController);
+                buttons.goTo(allWaypoints, mapController, false);
                 break;
             case R.id.btn_ILM_Waypoint_3:
                 buttons.setCounter = buttons.count;
                 buttons.count = 2;
-                buttons.goTo(allWaypoints, mapController);
+                buttons.goTo(allWaypoints, mapController, false);
                 break;
             case R.id.btn_ILM_Waypoint_4:
                 buttons.setCounter = buttons.count;
                 buttons.count = 3;
-                buttons.goTo(allWaypoints, mapController);
+                buttons.goTo(allWaypoints, mapController, false);
                 break;
             case R.id.btn_ILM_Waypoint_5:
                 buttons.setCounter = buttons.count;
                 buttons.count = 4;
-                buttons.goTo(allWaypoints, mapController);
+                buttons.goTo(allWaypoints, mapController, false);
                 break;
             case R.id.btn_ILM_Waypoint_6:
                 buttons.setCounter = buttons.count;
                 buttons.count = 5;
-                buttons.goTo(allWaypoints, mapController);
+                buttons.goTo(allWaypoints, mapController, false);
                 break;
             case R.id.btn_ILM_Waypoint_7:
                 buttons.setCounter = buttons.count;
                 buttons.count = 6;
-                buttons.goTo(allWaypoints, mapController);
+                buttons.goTo(allWaypoints, mapController, false);
                 break;
             case R.id.btn_ILM_Waypoint_8:
                 buttons.setCounter = buttons.count;
                 buttons.count = 7;
-                buttons.goTo(allWaypoints, mapController);
+                buttons.goTo(allWaypoints, mapController, false);
                 break;
             case R.id.btn_ILM_MapResize:
                 Log.e("mapView_ILM", "mapView_ILM");
                 buttons.mapResize(isExpanded, mapView);
                 isExpanded = !isExpanded;
+                break;
+            case R.id.btn_ILM_MapCenter:
+                mapController.isMapCentered = false;
                 break;
             case R.id.btn_ILM_PeopleDetection:
                 video.setDetectionEnabled(!video.isDetectionEnabled());

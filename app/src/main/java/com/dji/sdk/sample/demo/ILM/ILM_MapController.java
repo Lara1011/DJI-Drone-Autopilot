@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -29,6 +30,7 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -48,6 +50,7 @@ public class ILM_MapController {
     private Drawable arrowIcon;
     private Drawable pinIcon;
     private Drawable destinationIcon;
+    protected boolean isMapCentered = false;
 
     public ILM_MapController(Context context, MapView mapView) {
         this.mapView = mapView;
@@ -122,7 +125,10 @@ public class ILM_MapController {
                         }
                         mapView.getOverlays().add(startMarker);
                         previousMarker = startMarker;
-                        mapView.getController().setCenter(point);
+                        if (!isMapCentered) {
+                            mapView.getController().setCenter(point);
+                            isMapCentered = true;
+                        }
                     }
                 }
                 locationUpdateHandler.postDelayed(this, 1000);
@@ -192,19 +198,33 @@ public class ILM_MapController {
         double alt = Double.parseDouble(altitude);
 
         Marker markerToRemove = null;
-        for (Marker marker : waypointMarkers) {
+        Log.e("Markers size", String.valueOf(waypointMarkers.size()));
+
+        // Use an iterator to safely remove items while iterating
+        Iterator<Marker> iterator = waypointMarkers.iterator();
+        while (iterator.hasNext()) {
+            Marker marker = iterator.next();
             GeoPoint markerPosition = marker.getPosition();
+            Log.e("Marker", "Marker Lat: " + markerPosition.getLatitude() + ", Lon: " + markerPosition.getLongitude() + ", Alt: " + markerPosition.getAltitude());
+            Log.e("Waypoint to be removed", "Lat: " + lat + ", Lon: " + lon + ", Alt: " + alt);
+
             if (markerPosition.getLatitude() == lat && markerPosition.getLongitude() == lon && markerPosition.getAltitude() == alt) {
                 markerToRemove = marker;
-                break;
+                while (mapView.getOverlays().contains(markerToRemove)) {
+                    mapView.getOverlays().remove(markerToRemove);
+                }
+                iterator.remove(); // Safely remove the marker from the list
+                Log.e("removeWaypoint", "waypoint removed");
             }
         }
 
         if (markerToRemove != null) {
             mapView.getOverlays().remove(markerToRemove);
-            waypointMarkers.remove(markerToRemove);
         }
+
+        mapView.invalidate();
     }
+
 
     public void hideAllWaypoints() {
         for (Marker marker : waypointMarkers) {
@@ -223,7 +243,7 @@ public class ILM_MapController {
             }
         }
         if (destinationMarker != null) {
-            destinationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+            //destinationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
             destinationMarker.setIcon(resizeDrawable(destinationIcon, 50, 50));
             mapView.getOverlays().add(destinationMarker);
         }
