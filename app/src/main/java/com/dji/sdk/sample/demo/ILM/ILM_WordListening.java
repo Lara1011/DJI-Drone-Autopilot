@@ -52,8 +52,8 @@ public class ILM_WordListening implements RecognitionListener {
         if (matches != null) {
             for (String result : matches) {
                 Log.e("ILM_WordListening word heard", result);
-                showToast(result);
                 if (result.equalsIgnoreCase("rexi") || result.equalsIgnoreCase("rexy")) {
+                    //showToast(result);
                     showToast("Hi, how can I help you?");
                     stopListening();
                     ilmSpeechRecognizer.startListening();

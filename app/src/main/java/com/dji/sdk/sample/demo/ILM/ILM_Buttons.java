@@ -457,7 +457,7 @@ public class ILM_Buttons {
             public void onResult(DJIError djiError) {
                 if (djiError == null) {
                     showToast("Virtual sticks enabled!");
-                } else showToast("nope" + djiError);
+                } else showToast("Failed to enable virtual sticks: " + djiError);
             }
         });
         flightController.setVerticalControlMode(VerticalControlMode.POSITION);
@@ -498,7 +498,7 @@ public class ILM_Buttons {
             public void onResult(DJIError djiError) {
                 if (djiError == null) {
                     showToast("Virtual sticks enabled!");
-                } else showToast("nope" + djiError);
+                } else showToast("Failed to enable virtual sticks: " + djiError);
             }
         });
         flightController.setVerticalControlMode(VerticalControlMode.POSITION);

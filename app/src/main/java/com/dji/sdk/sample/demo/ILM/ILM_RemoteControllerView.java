@@ -125,6 +125,7 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
         statusBar.updateDateTime(date);
         statusBar.updateBattery(battery);
         statusBar.updateSpeed(speed);
+        statusBar.updateDistance(distance, new ILM_GPS(this.context));
         statusBar.updateXYZ(x, y, z);
         statusBar.updateLatitudeLongitudeAltitude(latitude, longitude, altitude);
         statusBar.updatePitchRollYaw(pitch, roll, yaw);
@@ -405,7 +406,7 @@ public class ILM_RemoteControllerView extends RelativeLayout implements View.OnC
     @Override
     public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
         if (mCodecManager == null) {
-            showToast(width + " " + height);
+            //showToast(width + " " + height);
             mCodecManager = new DJICodecManager(context, surface, width, height);
         }
     }

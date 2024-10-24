@@ -70,7 +70,7 @@ public class ILM_SpeechRecognizer {
                         commandKey = parseCommandEnglish(data.get(0));
                     else
                         commandKey = parseCommandHebrew(data.get(0));
-                    showToast("commandKey: " + commandKey);
+                    //showToast("commandKey: " + commandKey);
                     Log.e("ILM_SpeechRecognizer command heard word: ", commandKey);
                     submitCommand(commandKey);
 
