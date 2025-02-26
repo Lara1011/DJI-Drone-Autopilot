@@ -90,3 +90,21 @@ Two folders store essential data on the Android device:
 5. Turn on your drone and your controller connected to the Android device.
 6. Click on `Register APP` button, and wait until the `Open` button turns blue, that means the drone is connected to the RC.
 7. Click on `Open`, a list of interfaces will show up, under `ILM Remote Controller` interface click on `Mobile Remote Controller`
+   
+---
+## Demo: Showing the Features 
+You can find all the videos inside [here](videos/), the are big files, so you need to download it in order to play it, or see here below with Youtube links:
+### Go-To
+[![YouTube](http://i.ytimg.com/vi/Szy25ujMVQk/hqdefault.jpg)](https://www.youtube.com/watch?v=Szy25ujMVQk)
+### Repeat Route
+[![YouTube](http://i.ytimg.com/vi/zZ6wpH34AwE/hqdefault.jpg)](https://www.youtube.com/watch?v=zZ6wpH34AwE)
+### Mission
+[![YouTube](http://i.ytimg.com/vi/Vzf3RjPZALY/hqdefault.jpg)](https://www.youtube.com/watch?v=Vzf3RjPZALY)
+### Follow Me
+[![YouTube](http://i.ytimg.com/vi/wnf69fxDW-w/hqdefault.jpg)](https://www.youtube.com/watch?v=wnf69fxDW-w)
+### Voice Command
+[![YouTube](http://i.ytimg.com/vi/w_YEEzKgEYo/hqdefault.jpg)](https://www.youtube.com/watch?v=w_YEEzKgEYo)
+### Virtual Sticks
+[![YouTube](http://i.ytimg.com/vi/-zQa4j-t8mg/hqdefault.jpg)](https://www.youtube.com/watch?v=-zQa4j-t8mg)
+### People Detection
+[![YouTube](http://i.ytimg.com/vi/N1zaoWb2QBM/hqdefault.jpg)](https://www.youtube.com/watch?v=N1zaoWb2QBM)
